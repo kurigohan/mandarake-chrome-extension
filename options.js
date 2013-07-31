@@ -1,41 +1,88 @@
 // JavaScript Document
 
-function removeItem(index){
+var options = {
+	trackList: [],
+	editted: 0,
+	removeItem: function(index){
+		try{
+			
+			options.trackList.splice(parseInt(index, 10),1);
+			console.log('Removed at ' + index);
+			console.log(options.trackList);
+			options.editted = 1;
+			return true;
+		}
+		catch(err)
+		{
+			console.log(err.message);
+			return false;
+		}
+	},
 	
+	addItem: function(){
+		options.trackList.push($('#item').val());
+		options.appendElement(options.trackList.length-1);
+		options.editted = 1;
+		console.log(options.trackList);
+		console.log(options.trackList.length);
+	},
+	
+	checkInput: function(){
+		
+	},
+	
+	appendElement: function(start){
+		var divList = $('#tracking');
+		for(var i=start; i < options.trackList.length; i++)
+		{
+			divList.append('<li>'+options.trackList[i]+'<span href="" class="remove" data-index="'+i+'">x</span></li>');
+		};
+	},
+	
+	getList: function(){
+		chrome.storage.sync.get("track_list", function(data){
+			options.trackList = data.track_list;
+			options.appendElement(0);
 
+			// Attach events to html
+			$('#add').click(options.addItem);
+			
+			$('#save').click(function(){
+				if(options.editted == 1){
+					if(confirm('Save changes to the tracking list?'))
+					{
+						storage.save(options.trackList);
+						options.editted = 0;
+					}
+				}
+			});
+		});
+	}
 }
 
-function getList(){
-	chrome.storage.sync.get("track_list", function(data){
-		var divList = $('#figures ul');
-		var trackList = data.track_list;
-		for(var i=0; i < trackList.length; i++)
+function resetTest(){
+	var figuresToStore = ["Saber", "Kurisu", "KOSMOS"];
+	chrome.storage.sync.clear(function(){console.log('Cleared');});
+	storage.save(figuresToStore);
+}
+
+$(document).ready(function(){
+	options.getList();
+	
+	// Attach event to dynamically generated html
+	$(document).on('click','.remove',function(){
+		if(options.removeItem($(this).attr('data-index')))
 		{
-		divList.append('<li>'+trackList[i]+'<span class="remove" data-index="'+i+'">x</span></li>');
+			$(this).closest('li').remove();
+		}
+		else
+		{
+			console.log('Remove failed.');
 		}
 	});
 	
-}
-
-
-
-
-
-
-
-$(document).ready(function(){
-	/*
-chrome.storage.sync.get("track_list", function(data){
+	$('#test').click(resetTest);
 	
-	console.log(data.figure_list);
-	var divList = $('#figures ul');
 	
-	for(var i=0; i < data.track_list.length; i++)
-	{
-	divList.append('<li>'+data.track_list[i]+'<span class="remove" data-index="'+i+'">x</span></li>');
-	}
-	
-	});*/
-	getList();
 	
 });

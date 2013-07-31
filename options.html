@@ -3,18 +3,30 @@
 <head>
 <meta charset="utf-8">
 <style type="text/css">
-body{ font-family: Helvetica, Arial, sans-serif;}
-#figures{margin-top:50px; width: 500px; overflow:auto;}
-.remove{float:right;}
-.clear{clear:both;}
+body{ width: 500px; font-size:16px; font-family: Helvetica, Arial, sans-serif;}
+div{padding: 5px;}
+li{height:1.25em}
+li:hover{font-weight:bold; background-color:#e5e5e5;}
+#tracking{margin-top:5px; overflow:auto;}
+#save{float: right; font-size: 16px}
+.remove{float:right; text-decoration:none;color:#cd0000; }
+.remove:hover{cursor:pointer;}
+#test{float: right; clear: both}
 </style>
 <script type="text/javascript" src="jquery-2.0.3.min.js"></script>
+<script type="text/javascript" src="storage.js"></script>
 <script src='options.js'></script>
 <title>Options</title>
 </head>
 
 <body>
-<div id="figures"><h4>Tracked figures</h4><ul></ul></div>
-<div class="clear"></div>
+<input id="item" type="text"/><button id="add">Add</button>
+<div>
+<h3>Tracked Figures</h5><ul id='tracking'></ul>
+</div>
+<button id="save">Save</button>
+<a href=""><button id="test">Reset</button></a>
+
+
 </body>
 </html>
