@@ -3,30 +3,48 @@
 <head>
 <meta charset="utf-8">
 <style type="text/css">
-body{ width: 500px; font-size:16px; font-family: Helvetica, Arial, sans-serif;}
-div{padding: 5px;}
+body{ width: 400px; font-size:16px; font-family: Helvetica, Arial, sans-serif;}
+div{padding: 6px;}
 li{height:1.25em}
 li:hover{font-weight:bold; background-color:#e5e5e5;}
+#options{border: 1px solid #CCC;}
 #tracking{margin-top:5px; overflow:auto;}
-#save{float: right; font-size: 16px}
+button{ font-size: 14px; margin:auto }
+.floatright{float: right; clear:both;}
+#options{margin:5px 0px 5px 0px}
 .remove{float:right; text-decoration:none;color:#cd0000; }
 .remove:hover{cursor:pointer;}
 #test{float: right; clear: both}
+#savelist, #clearlist{margin:5px 0px 5px 0px};
 </style>
 <script type="text/javascript" src="jquery-2.0.3.min.js"></script>
-<script type="text/javascript" src="storage.js"></script>
-<script src='options.js'></script>
+<script type="text/javascript" src='options.js'></script>
+<script type="text/javascript" src="initoptions.js"></script>
 <title>Options</title>
 </head>
 
 <body>
-<input id="item" type="text"/><button id="add">Add</button>
-<div>
-<h3>Tracked Figures</h5><ul id='tracking'></ul>
+<div id="options">
+<label>Set interval </label>
+<select id="interval">
+	<option>5 minutes</option>
+    <option>10 minutes</option>
+    <option>15 minutes</option>
+    <option>30 minutes</option>
+    <option>45 minutes</option>
+    <option>60 minutes</option>
+</select>
+<button id="applyinterval" class="floatright">Apply</button>
 </div>
-<button id="save">Save</button>
+<br>
+<input id="item" type="text"/><button id="additem">Add</button>
+
+<div>
+<h3>Keywords</h5><ul id='tracking'></ul>
+</div>
+<button id="savelist" class="floatright">Save</button>
+<br>
+<button id="clearlist" class="floatright">Clear</button>
 <a href=""><button id="test">Reset</button></a>
-
-
 </body>
 </html>

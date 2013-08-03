@@ -16,8 +16,8 @@ function constructTags(){
 	});
 }
 
+
 $(document).ready(function(){
-	console.log('testing');
 	chrome.storage.sync.get('item_list', function(data){
 		chrome.browserAction.setBadgeText({text:""}); //Clear the badge text
 		constructTags(); //create tags to insert into the document
