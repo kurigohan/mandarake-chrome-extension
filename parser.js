@@ -57,7 +57,7 @@ var parser = {
 			console.log('View mode could not be determined.');
 	},
 	
-	searchForItems: function($items, selector){
+	searchForItems2: function($items, selector){
 		chrome.storage.sync.get('track_list', function(data){
 			console.log('---START SEARCH---');
 			console.log(data.track_list);
@@ -72,9 +72,9 @@ var parser = {
 				{	
 					if(details.indexOf(data.track_list[i].toLowerCase()) > -1)
 					{
-						console.log('****MATCH FOUND****');	
+						console.log('^^^^MATCH FOUND^^^^');	
 						url = $(this).find('a:first').attr('href');
-						console.log('Link: ' + url);
+						console.log('Link: ' + url + '\n-------------------');
 						figure.url = url;
 						parser.itemList.push(figure);
 						break; //Stop checking for matchs to avoid duplicate items
@@ -89,12 +89,43 @@ var parser = {
 				chrome.browserAction.setBadgeText({text: parser.itemList.length.toString()});
 			chrome.storage.sync.set({'item_list':parser.itemList}, function(){
 				console.log('** item_list saved **');	
-				}); //end sync.set
-			
-		});	//end .each
-	}
+				}); //end .each
+		});	//end sync.set
+	},
 	
-}
-function checkInput(){
+	searchForItems: function($items, selector){
+		console.log('---START SEARCH---');
+		console.log(background.trackList);
+		$items.each(function(){
+			var details = $(this).find(selector).text().toLowerCase();
+			var url = "";
+			var figure = { 'details': details,
+						   'url': url
+						 }
+			console.log('Checking: ' + details);
+			for(var i=0; i<background.trackList.length;i++)
+			{	
+				if(details.indexOf(background.trackList[i].toLowerCase()) > -1)
+				{
+					console.log('^^^^MATCH FOUND^^^^');	
+					url = $(this).find('a:first').attr('href');
+					console.log('Link: ' + url + '\n-------------------');
+					figure.url = url;
+					parser.itemList.push(figure);
+					break; //Stop checking for matchs to avoid duplicate items
+				}
+			}
+			
+			}); //end source.find
+		console.log("---SEARCH COMPLETE---");
+		console.log(parser.itemList);
 		
+		if(typeof parser.itemList !== 'undefined' && parser.itemList.length > 0)
+			chrome.browserAction.setBadgeText({text: parser.itemList.length.toString()});
+		chrome.storage.sync.set({'item_list':parser.itemList}, function(){
+			console.log('** item_list saved **');	
+			}); //end .each
+		
+	},
+	
 }

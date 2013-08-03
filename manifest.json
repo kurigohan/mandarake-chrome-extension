@@ -5,8 +5,7 @@
     "default_popup": "popup.html"
   },
   "background": {
-    "scripts":["jquery-2.0.3.min.js","options.js", "parser.js", "background.js"],
-    "persistent": false
+    "scripts":["jquery-2.0.3.min.js","parser.js", "background.js"]
   },
   "description": "Track Mandrake website for figure listing.",
   "manifest_version": 2,

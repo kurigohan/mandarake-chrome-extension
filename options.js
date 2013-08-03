@@ -3,10 +3,39 @@
 var options = {
 	trackList: [],
 	editted: 0,
+	start: function(){
+		chrome.storage.sync.get('track_list', function(data){
+			options.trackList = data.track_list;
+			console.log(options.trackList);
+			options.appendElement(0); // Display list
+
+			// Attach events to html
+			$('#additem').click(options.addItem);
+			$('#savelist').click(options.saveList);
+			$('#clearlist').click(options.clearList);
+			$('#applyinterval').click(options.changeInterval);
+			// Attach event to dynamically generated html
+			$('#test').click(resetTest);
+			$(document).on('click','.remove',function(){
+				if(options.removeItem($(this).attr('data-index')))
+				{
+					$(this).closest('li').remove();
+				}
+				else
+				{
+					console.log('Remove failed.');
+				}
+				});
+			
+
+			});
+		
+	},
+	
 	removeItem: function(index){
 		try{
-			
-			options.trackList.splice(parseInt(index, 10),1);
+			options.trackList[index] = '';
+			//options.trackList.splice(key.indexOf(options.trackList), 1);
 			console.log('Removed at ' + index);
 			console.log(options.trackList);
 			options.editted = 1;
@@ -21,17 +50,22 @@ var options = {
 	
 	addItem: function(){
 		options.trackList.push($('#item').val());
+		$('#item').val('');
 		options.appendElement(options.trackList.length-1);
 		options.editted = 1;
 		console.log(options.trackList);
-		console.log(options.trackList.length);
 	},
 	
-	appendElement: function(start){
-		var divList = $('#tracking');
+	appendElement: function(start, clear){
+		var $tracking = $('#tracking');
+		if(clear == 1)
+		{
+			$tracking.html('');
+		}
+		
 		for(var i=start; i < options.trackList.length; i++)
 		{
-			divList.append('<li>'+options.trackList[i]+'<span href="" class="remove" data-index="'+i+'">x</span></li>');
+			$tracking.append('<li>'+options.trackList[i]+'<span href="" class="remove" data-index="'+i+'">x</span></li>');
 		};
 	},
 	
@@ -63,10 +97,20 @@ var options = {
 		if(options.editted == 1){
 			if(confirm('Save changes to the tracking list?'))
 			{
+				options.trackList = options.trackList.filter(function(s){return s!==''});
+				//options.trackList = temp;
+				console.log('Cleaned options.trackList');
+				console.log(options.trackList);
+				options.appendElement(0, 1);
+				chrome.runtime.getBackgroundPage(function(bg){
+					bg.background.trackList = options.trackList.slice();
+					options.editted = 0;
+					}); //end getBackgroundPage
+					
 				chrome.storage.sync.set({'track_list':options.trackList}, function(){
-					console.log('** trackList saved **');
-					});
-				options.editted = 0;
+						console.log('** options.trackList saved **');
+						});
+				
 			}
 		} 
 	},
@@ -88,6 +132,7 @@ var options = {
 function resetTest(){
 	var figuresToStore = ["ZERO","Saber", "Kurisu", "KOSMOS"];
 	chrome.storage.sync.clear(function(){console.log('Cleared');});
-	chrome.storage.sync.set({'track_list':figuresToStore});
+	chrome.storage.sync.set({'track_list':figuresToStore},function(){console.log('Saved test list.');});;
+	options.trackList = figuresToStore;
+	options.appendElement(0, 1);
 }
-
