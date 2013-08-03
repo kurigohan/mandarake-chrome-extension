@@ -30,8 +30,8 @@ var background = {
 	
 	checkPage: function(){
 		var url = 'http://ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html';
-		parser.getPageSource(url, parser.searchForItems);
-		
+		//parser.getPageSource(url,parser.searchForItems);
+		parser.getPageSource(url, parser.findViewMode);
 	}
 };
 
