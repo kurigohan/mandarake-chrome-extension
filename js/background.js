@@ -1,14 +1,26 @@
 // JavaScript Document
 var background = {
-	trackList: [],
-	interval: 600000, //default interval of 10minutes
+	items: {
+		list: [], 
+		changed: false, 
+		newest: "" // parser.searchForItems() will stop when this is encountered
+	},
+	tracking: {
+		list: [], 
+		changed: false // when true, tells parser.searchForItems() to check items.list for duplicates
+					// see comments in parser.searchForItems() for more details
+	}, 
+	interval: 600000, //default interval (10 minutes)
 	intervalID: null,
 	start: function(){
 		//load settings and begin program
 		//var keys = ['interval', 'track_list'];
-		chrome.storage.sync.get(['interval','track_list'], function(data){
-				background.trackList = data.track_list.splice(0);
-				console.log(background.trackList);
+		chrome.storage.local.get(['interval','track_list'], function(data){
+				if(typeof data.track_list != 'undefined')
+					background.tracking.list = data.track_list;
+				else
+					console.log('No track_list found in storage.');
+				console.log(background.tracking.list);
 				if(data.interval >= 300000 && data.interval <= 3600000)
 				{
 					background.interval = data.interval;
@@ -16,13 +28,13 @@ var background = {
 				}
 				else
 					console.log('Invalid interval. Using default ' + background.interval);
-				if(background.trackList.length > 0){
+				if(background.tracking.list.length){
 					background.checkPage();
 					background.intervalID = window.setInterval(background.checkPage, background.interval);
 				}
 				else
-					console.log('background.tracklist is empty');
-			});	
+					console.log('background.tracking.list is empty. Program stopped.');
+		});	
 	},
 	
 	newInterval: function(){
@@ -32,15 +44,15 @@ var background = {
 		if(parser.requesting == 0){ // send xmlhttprequest if there isn't one currently processing
 			background.checkPage();
 		}
+		else
+			console.log('A request is already in progress. A new one cannot be sent.');
 		background.intervalID = window.setInterval(background.checkPage, background.interval);
 		console.log('New interval set: ' + background.interval);
 	},
 	
 	checkPage: function(){
 		var url = 'http://ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html';
-		//parser.getPageSource(url,parser.searchForItems);
-		parser.itemList = [];
-		parser.getPageSource(url, parser.findViewMode);
+		parser.getPageSource(url, parser.findView);
 	}
 };
 
