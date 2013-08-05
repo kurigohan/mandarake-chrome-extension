@@ -68,7 +68,7 @@ var options = {
 		
 		for(var i=start; i < options.trackList.length; i++)
 		{
-			$tracking.append('<li>'+options.trackList[i]+'<span href="" class="remove" data-index="'+i+'">x</span></li>');
+			$tracking.append('<li>'+options.trackList[i]+'<a href="#" class="remove" data-index="'+i+'">x</a></li>');
 		};
 	},
 	

@@ -9,13 +9,13 @@ var popup = {
 			{
 				console.log(page.background.items.list[i]);
 				
-				figure = "<li><a href=http://ekizo.mandarake.co.jp/shop/en/"+page.background.items.list[i].url+" target='_blank' class='item'>"+
-							page.background.items.list[i].details+"</a></li>";
+				figure = '<li></a><a href="#" class="remove">x</a><a href=http://ekizo.mandarake.co.jp/shop/en/' +
+						page.background.items.list[i].url + ' target="_blank" class="item">' +
+						page.background.items.list[i].details + '</li>';
 				$("#figure_list").append(figure);
 			}
 			
 			});
-		
 	},
 	
 }
@@ -32,17 +32,10 @@ function constructTags(){
 						page.background.items.list[i].details+"</a></li>";
 			$("#figures").append(figure);
 		}
-		
 	});
 }
 
 
 $(document).ready(function(){
-	/*chrome.storage.local.get('item_list', function(data){
-		chrome.browserAction.setBadgeText({text:""}); //Clear the badge text
-		constructTags(); //create tags to insert into the document
-		
-	});*/
-	
 	popup.start();
 });

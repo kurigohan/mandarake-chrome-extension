@@ -189,25 +189,6 @@ var parser = {
 	   return false;
 	},
 		
-	checkArray2: function(elm, subarr){
-		for(var i=0;i<subarr.length;i++){
-			if(elm.indexOf(subarr[i]) == -1)
-			{
-				return false;
-			}
-		}
-		return true;
-	},
-	
-
-	splitTrackList: function(arr){
-		var newarr = [];
-		for(var i=0; i<arr.length;i++){
-			newarr[i] = arr[i].split(" ");
-		}
-		console.log(newarr);
-		return newarr;
-	},
 	
 	
 }
