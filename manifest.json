@@ -7,12 +7,12 @@
   "background": {
     "scripts":["js/jquery-2.0.3.min.js","js/parser.js", "js/background.js"]
   },
-  "description": "Track Mandrake website for figure listing.",
+  "description": "Track ekizo.mandarake.co.jp for figure listings.",
   "manifest_version": 2,
   "name": "Mandrake Tracker",
   "offline_enabled": false,
   "options_page": "options.html",
   "permissions": ["storage", "http://ekizo.mandarake.co.jp/*"],
-  "version": "0.2"
+  "version": "0.5"
  
 }

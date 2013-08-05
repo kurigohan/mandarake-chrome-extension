@@ -109,9 +109,7 @@ var options = {
 				options.appendElement(0, true);
 				chrome.runtime.getBackgroundPage(function(page){
 					page.background.tracking.list = options.trackList.slice();
-					page.background.tracking.changed = true;
 					page.background.items.newest = '';
-	
 					options.changed = false;
 				}); //end getBackgroundPage
 					

@@ -3,12 +3,10 @@ var background = {
 	items: {
 		list: [], 
 		changed: false, 
-		newest: "" // parser.searchForItems() will stop when this is encountered
+		newest: '' // parser.searchForItems() will stop when this is encountered
 	},
 	tracking: {
-		list: [], 
-		changed: false // when true, tells parser.searchForItems() to check items.list for duplicates
-					// see comments in parser.searchForItems() for more details
+		list: []
 	}, 
 	interval: 600000, //default interval (10 minutes)
 	intervalID: null,
@@ -30,10 +28,12 @@ var background = {
 					console.log('Invalid interval. Using default ' + background.interval);
 				if(background.tracking.list.length){
 					background.checkPage();
-					background.intervalID = window.setInterval(background.checkPage, background.interval);
 				}
 				else
 					console.log('background.tracking.list is empty. Program stopped.');
+	
+				background.intervalID = window.setInterval(background.checkPage, background.interval);
+				console.log('intervalID set.');	
 		});	
 	},
 	
