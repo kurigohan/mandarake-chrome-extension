@@ -63,7 +63,7 @@ var parser = {
 				console.log('Checking: ' + details);
 				for(var i=0, len=background.tracking.list.length; i<len; ++i)
 				{	
-					if(parser.checkArray(details, background.tracking.list[i]))
+					if(parser.compare(details, background.tracking.list[i]))
 					{
 						console.log('^^^^MATCH FOUND^^^^');	
 						url = $(this).find('a:first').attr('href');
@@ -97,25 +97,8 @@ var parser = {
 		
 	}, //-------------------------------------------------
 	
-	arrayContains: function(arr, val, equals){
-		 var i = arr.length;
-   		while (i--) {
-        	if ( equals(arr[i], val) ) {
-            	return true;
-        	}
-    	}
-    	return false;	
-	},
-	
-	comparer: function(elm1, elm2){
-		return elm1.url === elm2.url;
-	},
-	
-	checkArray: function(str1, str2){
-	   return str1.toLowerCase().match(('.*'+str2).toLowerCase().replace(" ", ".*"));
-
-	},
-		
-	
-	
+	compare: function(str1, str2){
+													//replace all spaces with .*
+	   return str1.toLowerCase().match(str2.toLowerCase().replace(/ /g, '.*'));
+	}	
 }

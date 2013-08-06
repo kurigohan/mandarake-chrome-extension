@@ -175,4 +175,4 @@ var background = {
 
 
 chrome.extension.onRequest.addListener(background.onRequest); 	// wire up the listener	
-background.start();
+//background.start();

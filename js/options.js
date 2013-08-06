@@ -144,7 +144,7 @@ var options = {
 	},
 	
 	resetAll: function(){
-		if(confirm('Reset storage and variables?'))
+		if(confirm('Reset storage and settings?\n(The extension must be reloaded after.)'))
 		{
 			console.log('RESET');
 
