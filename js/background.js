@@ -1,16 +1,15 @@
 // JavaScript Document
 var background = {
 	items: {
-		list: [], 
-		changed: false, 
-		newest: '', // parser.searchForItems() will stop when this is encountered
-		removed: {} // stores urls that were removed by the user in popup. 
+		list: {}, 
+		removed: {}, // stores urls that were removed by the user in popup. 
 					 // ensures parser.searchForItems() doesn't add removed items to items.list again.
 			   	     // using object for faster searching since it provides hashing.
+		newest: '', // parser.searchForItems() will stop when this is encountered
+		changed: false	
 	},
 	tracking: {
 		list: [],
-		checkForDup: false,
 	}, 
 	interval: { 
 		time: 300000, // default interval (5 minutes)
@@ -20,7 +19,7 @@ var background = {
 	
 	start: function(){
 		//load settings and begin program
-		chrome.storage.local.get(['track_list', 'item_list',  'newest', 'badge_count', 'interval'], 
+		chrome.storage.local.get(['track_list', 'item_list',  'removed_list', 'newest', 'badge_count', 'interval'], 
 			function(data){
 				background.setVariables(data);
 				background.updateBadge();
@@ -44,7 +43,15 @@ var background = {
 		}
 		else
 			console.log('No item_list found in storage.');
-			
+		
+		if(typeof data.removed_list !== 'undefined'){
+			background.items.removed = data.removed_list;
+			console.log('removed list loaded: ');
+			console.log(background.items.removed);
+		}
+		else
+			console.log('No removed_list found in storage.');
+		
 		if(typeof data.newest !== 'undefined'){
 			background.items.newest = data.newest;
 			console.log('Newest item loaded: ');
@@ -101,28 +108,17 @@ var background = {
 			console.log('background.tracking.list is empty. Page request not sent.');
 	},
 	
-	removeItem: function(url){		
-		var index = -1;
-		for(var i=0, len=background.items.list.length; i<len; ++i){
-			if(background.items.list[i].url == url)
-			{
-				index = i;
-				break;
-			}
-		}
-		if(index > -1)
-		{
-			background.items.list.splice(index, 1);
-			console.log(background.items.list);
-			background.badgeCount--;
-			background.updateBadge();
-			console.log('Item removed: ' + url + '\nRemoved list:');
-			background.items.removed[url] = true;
-			console.log(background.items.removed);
-		}
-		else
-			console.log('Url not found in background.items.list');
-			
+	removeItem: function(url){
+		delete background.items.list[url];
+		background.items.removed[url] = true;
+		background.badgeCount--;
+		background.updateBadge();
+		console.log(url + ' removed.');
+		console.log(background.items.list);
+		chrome.storage.local.set({'item_list':background.items.list, 'removed_list':background.items.removed, 
+									'badge_count':background.badgeCount}, function(){
+			console.log('item_list, removed_list, badge_count saved');
+		});
 	},
 	
 	updateBadge: function(){
@@ -138,7 +134,6 @@ var background = {
 		background.tracking.list = newTracking.list;
 		if(newTracking.added) {
 			// force parser.searchForItems() to search all listings since tracking list has new keys
-			background.tracking.checkForDup = true;
 			background.items.newest = ''; 
 		}
 	},
@@ -157,6 +152,18 @@ var background = {
 			case 'change_interval':
 				console.log('change_interval request received.');
 				background.setNewInterval(request.interval);
+				break;
+			case 'reset':
+				console.log('reset request received.');
+				background.items.list = {};
+				background.items.newest = '';
+				background.items.changed = false;
+				backround.items.removed = {};
+				background.tracking.list = [];
+				background.badgeCount = 0;
+				background.updateBadge();
+				window.clearInterval(background.interval.id);
+				console.log('All variables cleared.'); 
 				break;
 			default: 
 				console.log('Error: Invalid request action.');

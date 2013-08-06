@@ -16,10 +16,11 @@ var options = {
 			$('#limit').text(options.tracking.list.length + '/20');
 			
 			// Attach events to html
-			$('#additem').click(options.addItem);
-			$('#savelist').click(options.saveList);
-			$('#clearlist').click(options.clearList);
-			$('#applyinterval').click(options.changeInterval);
+			$('#add_item').click(options.addItem);
+			$('#save_list').click(options.saveList);
+			$('#clear_list').click(options.clearList);
+			$('#apply_interval').click(options.changeInterval);
+			$('#reset').click(options.resetAll);
 			// Attach event to dynamically generated html
 			$(document).on('click','.remove',function(){
 				if(options.removeItem($(this).attr('data-index')))
@@ -140,6 +141,19 @@ var options = {
 				
 			}
 		} 
+	},
+	
+	resetAll: function(){
+		if(confirm('Reset storage and variables?'))
+		{
+			console.log('RESET');
+
+			chrome.storage.local.clear(function(){
+				console.log('Storage cleared.');
+				chrome.extension.sendRequest({action:'reset'});
+			});
+		}
+	
 	}
 }
 

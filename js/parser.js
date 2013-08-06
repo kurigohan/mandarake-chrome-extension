@@ -49,21 +49,17 @@ var parser = {
 		else
 			console.log('View mode could not be determined.');
 	},
-	
 	searchForItems: function($items, selector){
 		console.log('Parsing document...\n---START SEARCH---');
 		console.log(background.tracking.list);
 		console.log('Stop at this item:\n'+background.items.newest);
 		var firstItem = $items.first().find(selector).text().trim();
 		firstItem = firstItem.replace(/\s{2,}/g, ' '); //replace multiple spaces and tabs
+		var details;
 		$items.each(function(){
-			var details = $(this).find(selector).text().trim();
+			details = $(this).find(selector).text().trim();
 			details = details.replace(/\s{2,}/g, ' ');
 			if(details != background.items.newest){
-				var figure = { details: details,
-							   url: ''
-							 }
-				var isDup = false;
 				console.log('Checking: ' + details);
 				for(var i=0, len=background.tracking.list.length; i<len; ++i)
 				{	
@@ -72,24 +68,12 @@ var parser = {
 						console.log('^^^^MATCH FOUND^^^^');	
 						url = $(this).find('a:first').attr('href');
 						console.log('Link: ' + url + '\n-------------------');
-						if(!(url in background.items.removed)){
-							if(background.tracking.checkForDup)
-							{
-								for(var j=0, len2=background.items.list.length; j<len; ++j){
-									if(url == background.items.list[j].url){
-										isDup = true;
-										break;
-									}
-								}
-							}
-							if(!isDup){
-								figure.url = url;
-								background.items.list.push(figure);
-								background.badgeCount++;
-							}
+						if(!(url in background.items.removed) && !(url in background.items.list)){
+							background.items.list[url] = details;
+							background.badgeCount++;
 						}
 						else
-							console.log('-- Found in items.removed. Not added to items.list.');
+							console.log('-- Not added. Exists in items.removed or already in items.list.');
 						break; //Stop checking for matchs to avoid duplicate items
 					}
 				}
@@ -99,43 +83,19 @@ var parser = {
 				return false; //break out of .each loop
 			}
 		}); //end source.find
-		/*if(background.items.list.length > 1 && background.items.newest == ''){ 
-			  items.newest was reset when tracking.changed was set to force searchForItems() 
-			  to parse the entire page instead of stopping when items.newest was encountered.
-			  There may be duplicate items in the array as a result.
-			//Remove duplicates from the items.list
-			background.items.list = parser.removeDuplicates(background.items.list, parser.comparer);
-			console.log('Duplicates removed');
-		}*/
 		
 		console.log("---SEARCH COMPLETE---");
 		console.log(background.items.list);
-		background.tracking.checkForDup = false;
+		console.log('Items found: ' + Object.keys(background.items.list).length);
 		background.items.newest = firstItem;
 		background.updateBadge();
-		
-		
+
 		chrome.storage.local.set({'item_list':background.items.list, 'newest':background.items.newest, 
-								'badge_count':background.badgeCount}, function(){
-									console.log('** item_list and badge_count saved **');	
+				    'badge_count':background.badgeCount}, function(){
+					console.log('** item_list and badge_count saved **');	
 		}); //end .each
 		
 	}, //-------------------------------------------------
-	
-	removeDuplicates: function(arr, equals){
-		var originalArr = arr.slice();
-		var i, len, j, val;
-		arr.length = 0;
-	
-		for (i=0, len=originalArr.length; i<len; ++i) {
-			val = originalArr[i];
-			if (!parser.arrayContains(arr, val, equals)) {
-				arr.push(val);
-			}
-    	}
-		background.badgeCount -= originalArr.length - arr.length;
-		return arr;
-	},
 	
 	arrayContains: function(arr, val, equals){
 		 var i = arr.length;

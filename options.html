@@ -11,11 +11,11 @@ li:hover{font-weight:bold; background-color:#e5e5e5;}
 #tracking{margin-top:5px; overflow:auto;}
 #limit{float: right; font-size: 14px; color:#CCC}
 button{ font-size: 14px; margin:auto }
-.floatright{float: right; clear:both;}
+.float_right{float: right; clear:both;}
 #options{margin:5px 0px 5px 0px}
 .remove{float:right; text-decoration:none;color:#cd0000; }
 #test{float: right; clear: both}
-#savelist, #clearlist{margin:5px 0px 5px 0px};
+#save_list, #clear_list{margin:5px 0px 5px 0px};
 </style>
 <script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>
 <script type="text/javascript" src="js/options.js"></script>
@@ -33,17 +33,19 @@ button{ font-size: 14px; margin:auto }
     <option>45 minutes</option>
     <option>60 minutes</option>
 </select>
-<button id="applyinterval" class="floatright">Apply</button>
+<button id="apply_interval" class="float_right">Apply</button>
 </div>
 <br>
-<input id="item" type="text"/><button id="additem">Add</button>
+<input id="item" type="text"/><button id="add_item">Add</button>
 
 <div>
 <h3>Keywords <span id="limit"></span></h5>
 <ul id='tracking'></ul>
 </div>
-<button id="savelist" class="floatright">Save</button>
+<button id="save_list" class="float_right">Save</button>
 <br>
-<button id="clearlist" class="floatright">Clear</button>
+<button id="clear_list" class="float_right">Clear</button>
+<br>
+<button id="reset" class="float_right">Reset</button>
 </body>
 </html>
