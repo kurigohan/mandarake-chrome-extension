@@ -9,6 +9,7 @@ li{height:1.25em}
 li:hover{font-weight:bold; background-color:#e5e5e5;}
 #options{border: 1px solid #CCC;}
 #tracking{margin-top:5px; overflow:auto;}
+#limit{float: right; font-size: 14px; color:#CCC}
 button{ font-size: 14px; margin:auto }
 .floatright{float: right; clear:both;}
 #options{margin:5px 0px 5px 0px}
@@ -18,7 +19,6 @@ button{ font-size: 14px; margin:auto }
 </style>
 <script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>
 <script type="text/javascript" src="js/options.js"></script>
-<script type="text/javascript" src="js/initoptions.js"></script>
 <title>Options</title>
 </head>
 
@@ -39,11 +39,11 @@ button{ font-size: 14px; margin:auto }
 <input id="item" type="text"/><button id="additem">Add</button>
 
 <div>
-<h3>Keywords</h5><ul id='tracking'></ul>
+<h3>Keywords <span id="limit"></span></h5>
+<ul id='tracking'></ul>
 </div>
 <button id="savelist" class="floatright">Save</button>
 <br>
 <button id="clearlist" class="floatright">Clear</button>
-<button id="test">Reset</button>
 </body>
 </html>

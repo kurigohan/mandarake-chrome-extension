@@ -1,62 +1,89 @@
 // JavaScript Document
 
 var options = {
-	trackList: [],
+	tracking: {
+		list: [],
+		added: false // set to true when a new item is added to the list
+					 // tells options.saveList to reset background.items.newest 
+	},
+	listCount: 0,
+	interval: 300000,
 	changed: false,
 	start: function(){
-		chrome.storage.local.get('track_list', function(data){
-			if(typeof data.track_list != 'undefined')
-				options.trackList = data.track_list;
-			else
-				console.log('No track_list found in storage.');
-			console.log(options.trackList);
-			options.appendElement(0); // Display list
-
+		chrome.storage.local.get(['track_list','interval'], function(data){
+			options.setVariables(data);
+			options.appendElement(0); // display list
+			$('#limit').text(options.tracking.list.length + '/20');
+			
 			// Attach events to html
 			$('#additem').click(options.addItem);
 			$('#savelist').click(options.saveList);
 			$('#clearlist').click(options.clearList);
 			$('#applyinterval').click(options.changeInterval);
 			// Attach event to dynamically generated html
-			$('#test').click(resetTest);
 			$(document).on('click','.remove',function(){
 				if(options.removeItem($(this).attr('data-index')))
 				{
 					$(this).closest('li').remove();
+					$('#limit').text(options.listCount + '/20');
 				}
-				else
-				{
-					console.log('Remove failed.');
-				}
-				});
-			
-
-		});
+			}); //end .on
+		}); // end local.get
+		
+	},
+	
+	setVariables: function(data){
+		if(typeof data.track_list !== 'undefined')
+		{
+			options.tracking.list = data.track_list;
+			options.listCount = options.tracking.list.length;
+			console.log('tracking_list loaded.');
+			console.log(options.tracking.list);
+		}
+		else
+			console.log('No track_list found in storage.');
+		if(typeof data.interval !== 'undefined')
+		{
+			options.interval = data.interval;
+			console.log('interval loaded: ' + options.interval);
+		}
+		else
+			console.log('No interval found in storage.');
 		
 	},
 	
 	removeItem: function(index){
-		try{
-			options.trackList[index] = '';
-			//options.trackList.splice(key.indexOf(options.trackList), 1);
+		if(typeof options.tracking.list[index] !== 'undefined' &&  options.tracking.list[index] !== null)
+		{
+			options.tracking.list[index] = '';
 			console.log('Removed at ' + index);
-			console.log(options.trackList);
+			console.log(options.tracking.list);
 			options.changed = true;
+			options.listCount--;
 			return true;
 		}
-		catch(err)
-		{
-			console.log(err.message);
-			return false;
-		}
+		console.log('Remove failed.');
+		return false;
+
 	},
 	
 	addItem: function(){
-		options.trackList.push($('#item').val());
-		$('#item').val('');
-		options.appendElement(options.trackList.length-1);
-		options.changed = true;
-		console.log(options.trackList);
+		if(options.tracking.list.length < 20){
+			options.tracking.list.push($('#item').val());
+			$('#item').val('');
+			options.appendElement(options.tracking.list.length-1);
+			options.changed = true;
+			options.tracking.added = true;
+			console.log('Added.');
+			console.log(options.tracking.list);
+			options.listCount++;
+			$('#limit').text(options.listCount + '/20');
+		}
+		else
+		{
+			console.log('tracking.list is full');
+			alert('The tracking list is full.');	
+		}
 	},
 	
 	appendElement: function(start, clear){
@@ -66,55 +93,49 @@ var options = {
 			$tracking.html('');
 		}
 		
-		for(var i=start; i < options.trackList.length; i++)
+		for(var i=start, len=options.tracking.list.length; i<len; ++i)
 		{
-			$tracking.append('<li>'+options.trackList[i]+'<a href="#" class="remove" data-index="'+i+'">x</a></li>');
+			$tracking.append('<li>'+options.tracking.list[i]+'<a href="#" class="remove" data-index="'+i+'">x</a></li>');
 		};
 	},
 	
 	changeInterval: function(){
-		chrome.runtime.getBackgroundPage(function(page){
-			var newInterval =  parseInt($('#interval').find(':selected').text(), 10) * 60000;
-			console.log('Change interval to ' + newInterval);
-			if(newInterval!=page.background.interval && newInterval>=300000 && newInterval<=3600000) 
-			// Make sure interval different from current and is within the range 5 - 60 minutes
-			{
-				page.background.interval = newInterval;
-				console.log(page.background.interval);
-				chrome.storage.local.set({'interval':page.background.interval}, function(){
-					console.log('** interval saved: ' + page.background.interval + ' **');
-					page.background.newInterval();
-				}); // end storage
-			}
-			else
-				console.log('Interval same as current. No changes made.');
-			
-		}); //end runtime.getBackgroundPage
+		var newInterval =  parseInt($('#interval').find(':selected').text(), 10) * 60000;
+		console.log('Change interval to ' + newInterval);
+		// make sure interval different from current and is within the range 5 - 60 minutes
+		if(newInterval!=options.interval && newInterval>=300000 && newInterval<=3600000) 
+		{
+			options.interval = newInterval;
+			chrome.extension.sendRequest({action: 'change_interval', interval: newInterval});
+			alert('Interval changed to ' + newInterval/60000 + ' minutes.');
+		}
+		else
+			console.log('Interval is invalid or same as current. No changes made.');
 	},
 	
 	clearList: function(){
-		options.trackList = [];
+		options.tracking.list = [];
 		$('#tracking').html('');
 		options.changed = true;
+		$('#limit').text(options.tracking.list.length + '/20');
 	},
 	
 	saveList: function(){
 		if(options.changed){
 			if(confirm('Save changes to the tracking list?'))
 			{
-				options.trackList = options.trackList.filter(function(s){return s!==''});
-				//options.trackList = temp;
-				console.log('Cleaned options.trackList');
-				console.log(options.trackList);
+				options.tracking.list = options.tracking.list.filter(function(s){return s!==''});
+				//options.tracking.list = temp;
+				console.log('Cleaned options.tracking.list');
+				console.log(options.tracking.list);
 				options.appendElement(0, true);
-				chrome.runtime.getBackgroundPage(function(page){
-					page.background.tracking.list = options.trackList.slice();
-					page.background.items.newest = '';
-					options.changed = false;
-				}); //end getBackgroundPage
-					
-				chrome.storage.local.set({'track_list':options.trackList}, function(){
-						console.log('** options.trackList saved **');
+				
+				chrome.extension.sendRequest({action: 'change_tracking', tracking: options.tracking});
+				options.tracking.added = false;
+				options.changed = false;
+
+				chrome.storage.local.set({'track_list':options.tracking.list}, function(){
+						console.log('** options.tracking.list saved **');
 				});
 				
 			}
@@ -122,10 +143,6 @@ var options = {
 	}
 }
 
-function resetTest(){
-	var figuresToStore = ["ZERO","Saber", "Kurisu", "KOSMOS"];
-	chrome.storage.local.clear(function(){console.log('Cleared');});
-	chrome.storage.local.set({'track_list':figuresToStore},function(){console.log('Saved test list.');});;
-	options.trackList = figuresToStore;
-	options.appendElement(0, true);
-}
+$(document).ready(function(){
+	options.start();
+});
