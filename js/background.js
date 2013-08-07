@@ -16,7 +16,8 @@ var background = {
 		id: null
 	},  
 	badgeCount: 0,
-	
+	requesting: false, // Indicates if an xmlhttprequest is running
+	searchUrl: 'http://ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html',
 	start: function(){
 		//load settings and begin program
 		chrome.storage.local.get(['track_list', 'item_list',  'removed_list', 'newest', 'badge_count', 'interval'], 
@@ -78,7 +79,12 @@ var background = {
 		
 	},
 	
-	setNewInterval: function(time){
+	setNewInterval: function(time, url){
+		var pageUrl;
+		if(url)
+			pageUrl = url;
+		else
+			pageUrl = background.searchUrl;
 		if(time)
 		{
 			background.interval.time = time;	
@@ -90,22 +96,57 @@ var background = {
 			window.clearInterval(background.interval.id)
 			console.log('interval.id cleared.');
 		}
-		if(!parser.requesting){ // send xmlhttprequest if there isn't one currently processing
-			background.checkPage();
+		if(!background.requesting){ // send xmlhttprequest if there isn't one currently processing
+			background.checkPage(pageUrl);
 		}
 		else
 			console.log('A request is already in progress. A new one cannot be sent.');
-		background.interval.id = window.setInterval(background.checkPage, background.interval.time);
+		background.interval.id = window.setInterval(function(){background.checkPage(pageUrl)}, background.interval.time);
 		console.log('interval.id set.');
 	},
 	
-	checkPage: function(){
-		if(background.tracking.list.length){
-			var url = 'http://ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html';
-			parser.getPageSource(url, parser.findView);
+	getPageSource: function(url, callback) {
+		console.log('Fetching document: ' + url);
+		var xhr = new XMLHttpRequest();
+		background.requesting = true;
+		xhr.open("GET", url, true);
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState == 4) {
+				callback(xhr.responseText);
+				background.requesting = false;
+			}
+		};
+		xhr.send();
+	},
+	
+	checkPage: function(url){
+		if(url && background.tracking.list.length){
+			background.getPageSource(url, background.findView);
 		}
 		else
-			console.log('background.tracking.list is empty. Page request not sent.');
+			console.log('Invalid url or empty tracking list. Page request not sent.');
+	},
+	
+	findView: function(page){
+		console.log('Determining document view setting...');
+		// Parse the page for use with JQuery (avoids get error with relative image paths)
+		var doc = document.implementation.createHTMLDocument('');
+		doc.documentElement.innerHTML = page;
+		$items = $(doc).find('#itemlist');
+		if($items.find('h5:first').length){
+			console.log('View Mode: Thumbnail');
+			parser.searchForItems($items.find('td[style]'), 'h5');
+		}
+		else if($items.find('.list_text:first').length){
+			console.log('View Mode: without image');
+			parser.searchForItems($items.find('tr'), '.list_text');
+		}
+		else if($items.find('h1:first').length){
+			console.log('View Mode: with image');
+			parser.searchForItems($items.find('table[style]'), 'h1');
+		}
+		else
+			console.log('View mode could not be determined. Search request cancelled.');
 	},
 	
 	removeItem: function(url){
@@ -153,12 +194,17 @@ var background = {
 				console.log('change_interval request received.');
 				background.setNewInterval(request.interval);
 				break;
+			case 'change_url':
+				console.log('change_url request received.');
+				background.searchUrl = request.url;
+				background.setNewInterval();
+				break;
 			case 'reset':
 				console.log('reset request received.');
 				background.items.list = {};
 				background.items.newest = '';
 				background.items.changed = false;
-				backround.items.removed = {};
+				background.items.removed = {};
 				background.tracking.list = [];
 				background.badgeCount = 0;
 				background.updateBadge();
@@ -175,4 +221,4 @@ var background = {
 
 
 chrome.extension.onRequest.addListener(background.onRequest); 	// wire up the listener	
-//background.start();
+background.start();

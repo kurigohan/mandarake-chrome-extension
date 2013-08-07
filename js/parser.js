@@ -2,20 +2,7 @@
 //Requires background.js
 
 var parser = {
-	requesting: false, // Indicates if an xmlhttprequest is running
-	getPageSource: function(url, callback) {
-		console.log('Fetching document...');
-		var xhr = new XMLHttpRequest();
-		parser.requesting = true;
-		xhr.open("GET", url, true);
-		xhr.onreadystatechange = function() {
-			if (xhr.readyState == 4) {
-				callback(xhr.responseText);
-				parser.requesting = false;
-			}
-		};
-		xhr.send();
-	},
+	
 	
 	constructItemList: function(data){
 		var $source = $(data).find("#itemlist");
@@ -27,28 +14,6 @@ var parser = {
 		chrome.storage.local.set({'item_list':background.items.list});	
 	},
 	
-	
-	findView: function(page){
-		console.log('Determining document view setting...');
-		// Parse the page for use with JQuery (avoids get error with relative image paths)
-		var doc = document.implementation.createHTMLDocument('');
-		doc.documentElement.innerHTML = page;
-		$items = $(doc).find('#itemlist');
-		if($items.find('h5:first').length){
-			console.log('View Mode: Thumbnail');
-			parser.searchForItems($items.find('td[style]'), 'h5');
-		}
-		else if($items.find('.list_text:first').length){
-			console.log('View Mode: without image');
-			parser.searchForItems($items.find('tr'), '.list_text');
-		}
-		else if($items.find('h1:first').length){
-			console.log('View Mode: with image');
-			parser.searchForItems($items.find('table[style]'), 'h1');
-		}
-		else
-			console.log('View mode could not be determined.');
-	},
 	searchForItems: function($items, selector){
 		console.log('Parsing document...\n---START SEARCH---');
 		console.log(background.tracking.list);
@@ -86,7 +51,7 @@ var parser = {
 		
 		console.log("---SEARCH COMPLETE---");
 		console.log(background.items.list);
-		console.log('Items found: ' + Object.keys(background.items.list).length);
+		console.log('Item count: ' + Object.keys(background.items.list).length);
 		background.items.newest = firstItem;
 		background.updateBadge();
 
@@ -98,7 +63,7 @@ var parser = {
 	}, //-------------------------------------------------
 	
 	compare: function(str1, str2){
-													//replace all spaces with .*
-	   return str1.toLowerCase().match(str2.toLowerCase().replace(/ /g, '.*'));
-	}	
+		var pattern = new RegExp( str2.toLowerCase().replace(/ /g, '.*'));
+		return pattern.test(str1.toLowerCase());
+	}
 }

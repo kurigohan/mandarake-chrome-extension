@@ -13,6 +13,6 @@
   "offline_enabled": false,
   "options_page": "options.html",
   "permissions": ["storage", "http://ekizo.mandarake.co.jp/*"],
-  "version": "0.5"
+  "version": "0.7"
  
 }

@@ -5,13 +5,7 @@ var popup = {
 		
 		chrome.runtime.getBackgroundPage(function(page){
 			console.log(page.background.items.list);
-			/*
-			var figure;
-			for(var i=0, len=page.background.items.list.length; i<len; ++i)
-			{
-				//console.log(page.background.items.list[i]);
-				$("#figure_list").append(popup.constructTag(page.background.items.list[i]));
-			}*/
+			Object.keys(page.background.items.list).length
 			popup.displayItems(page.background.items.list);
 			$('.remove').click(function(){
 				console.log($(this).next().attr('href').slice(37)); 
@@ -22,7 +16,7 @@ var popup = {
 		});
 	},
 	
-	displayItems: function(list){
+	displayItems: function(list, start, end){
 		for(var key in list){
 			$("#figure_list").append(popup.constructTag(key, list[key]));		
 		}
@@ -37,19 +31,21 @@ var popup = {
 		
 	},
 
-	constructTag2: function(figure){
-		var tag = '<li></a><a href="" class="remove">x</a><a href=http://ekizo.mandarake.co.jp/shop/en/' +
-					figure.url + ' target="_blank" class="item">' +
-					figure.details + '</li>';
-		return tag;
-	
-	},
-	
 	removeItem: function(itemPage){
 		
 		chrome.extension.sendRequest({action: 'remove_item', url: itemPage});
-	}
+	},
 	
+	createPage: function(list){
+		var len = Object.keys(list).length;
+		if(len > 10){
+			
+		}
+		else
+		{
+			popup.displayItems(list);			
+		}
+	}	
 }
 
 

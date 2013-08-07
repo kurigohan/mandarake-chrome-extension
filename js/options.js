@@ -20,6 +20,7 @@ var options = {
 			$('#save_list').click(options.saveList);
 			$('#clear_list').click(options.clearList);
 			$('#apply_interval').click(options.changeInterval);
+			$('#apply_url').click(options.changeUrl);
 			$('#reset').click(options.resetAll);
 			// Attach event to dynamically generated html
 			$(document).on('click','.remove',function(){
@@ -112,6 +113,20 @@ var options = {
 		}
 		else
 			console.log('Interval is invalid or same as current. No changes made.');
+	},
+	
+	changeUrl: function(){
+		var pattern = new RegExp( '^ekizo.mandarake.co.jp/shop/en/')
+		var newUrl = $('#url').val();
+		console.log(newUrl);
+		if(pattern.test(newUrl)){
+			newUrl = 'http://' + newUrl;
+			console.log('Change url: ' + newUrl)
+			chrome.extension.sendRequest({action: 'change_url', url: newUrl});
+		}
+		else
+			alert('Invalid url.');
+
 	},
 	
 	clearList: function(){
