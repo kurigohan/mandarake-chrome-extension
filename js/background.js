@@ -88,9 +88,9 @@ var background = {
 		if(time)
 		{
 			background.interval.time = time;	
-			chrome.storage.local.set({'interval':background.interval.time}, function(){
+			/*chrome.storage.local.set({'interval':background.interval.time}, function(){
 				console.log('interval saved.')
-			});
+			});*/
 		}
 		if(background.interval.id){
 			window.clearInterval(background.interval.id)
@@ -121,32 +121,31 @@ var background = {
 	
 	checkPage: function(url){
 		if(url && background.tracking.list.length){
-			background.getPageSource(url, background.findView);
+			background.getPageSource(url, function(data){
+				background.searchPageSource(data);
+				background.save();
+				});
 		}
 		else
 			console.log('Invalid url or empty tracking list. Page request not sent.');
 	},
 	
-	findView: function(page){
-		console.log('Determining document view setting...');
-		// Parse the page for use with JQuery (avoids get error with relative image paths)
-		var doc = document.implementation.createHTMLDocument('');
-		doc.documentElement.innerHTML = page;
-		$items = $(doc).find('#itemlist');
-		if($items.find('h5:first').length){
-			console.log('View Mode: Thumbnail');
-			parser.searchForItems($items.find('td[style]'), 'h5');
+	searchPageSource: function(page){
+		var viewMode = parser.getView(page);
+		switch(viewMode.view){
+			case 'thumbnail':
+				parser.searchForItems(viewMode.$itemlist.find('td[style]'), 'h5');
+				break;
+			case 'image':
+				parser.searchForItems(viewMode.$itemlist.find('table[style]'), 'h1');
+				break;
+			case 'no_image':
+				parser.searchForItems(viewMode.$itemlist.find('tr'), '.list_text');
+				break;
+			default:
+				console.log('View mode could not be determined. Search request cancelled.');
+				break;
 		}
-		else if($items.find('.list_text:first').length){
-			console.log('View Mode: without image');
-			parser.searchForItems($items.find('tr'), '.list_text');
-		}
-		else if($items.find('h1:first').length){
-			console.log('View Mode: with image');
-			parser.searchForItems($items.find('table[style]'), 'h1');
-		}
-		else
-			console.log('View mode could not be determined. Search request cancelled.');
 	},
 	
 	removeItem: function(url){
@@ -156,10 +155,10 @@ var background = {
 		background.updateBadge();
 		console.log(url + ' removed.');
 		console.log(background.items.list);
-		chrome.storage.local.set({'item_list':background.items.list, 'removed_list':background.items.removed, 
+		/*chrome.storage.local.set({'item_list':background.items.list, 'removed_list':background.items.removed, 
 									'badge_count':background.badgeCount}, function(){
 			console.log('item_list, removed_list, badge_count saved');
-		});
+		});*/
 	},
 	
 	updateBadge: function(){
@@ -177,6 +176,14 @@ var background = {
 			// force parser.searchForItems() to search all listings since tracking list has new keys
 			background.items.newest = ''; 
 		}
+	},
+	
+	save: function(){
+		chrome.storage.local.set({'item_list':background.items.list, 'newest':background.items.newest, 
+				'removed_list':background.removed_list, 'interval':background.interval.time,
+				 'badge_count':background.badgeCount}, function(){
+				console.log('Background saved.');	
+		});
 	},
 	
 	onRequest: function(request, sender){
@@ -221,4 +228,5 @@ var background = {
 
 
 chrome.extension.onRequest.addListener(background.onRequest); 	// wire up the listener	
+chrome.windows.onRemoved.addListener(background.save);
 background.start();

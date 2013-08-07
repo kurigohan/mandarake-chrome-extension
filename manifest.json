@@ -12,7 +12,7 @@
   "name": "Mandrake Tracker",
   "offline_enabled": false,
   "options_page": "options.html",
-  "permissions": ["storage", "http://ekizo.mandarake.co.jp/*"],
+  "permissions": ["storage", "tabs", "http://ekizo.mandarake.co.jp/*"],
   "version": "0.7"
  
 }

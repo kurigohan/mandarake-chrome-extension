@@ -2,16 +2,31 @@
 //Requires background.js
 
 var parser = {
-	
-	
-	constructItemList: function(data){
-		var $source = $(data).find("#itemlist");
-		var itemLink = "http://ekizo.mandarake.co.jp/shop/en/"+$source.find("a.info:first").attr("href");
-		var name = $source.find("h5:first").text();
-		var figure = "<li><a href="+itemLink+" target='_blank' class='item'>"+name+"</a></li>";
-		background.items.list.push(figure);
-		chrome.browserAction.setBadgeText({text: background.items.list.length.toString()});
-		chrome.storage.local.set({'item_list':background.items.list});	
+		
+	getView: function(page){
+		console.log('Determining document view setting...');
+		// Parse the page for use with JQuery (avoids get error with relative image paths)
+		var doc = document.implementation.createHTMLDocument('');
+		doc.documentElement.innerHTML = page;
+		$itemlist = $(doc).find('#itemlist');
+		if($itemlist.find('h5:first').length){
+			console.log('View Mode: Thumbnail');
+			return {view:'thumbnail', $itemlist:$itemlist};
+			//parser.searchForItems($itemlist.find('td[style]'), 'h5');
+		}
+		else if($itemlist.find('h1:first').length){
+			console.log('View Mode: with image');
+			return {view:'image', $itemlist:$itemlist};
+			//parser.searchForItems($itemlist.find('table[style]'), 'h1');
+		}
+		else if($itemlist.find('.list_text:first').length){
+			console.log('View Mode: without image');
+			return {view:'no_image', $itemlist:$itemlist};
+			//parser.searchForItems($itemlist.find('tr'), '.list_text');
+		}
+		else
+			return {view:'unknown', $itemlist:$itemlist};
+			//console.log('View mode could not be determined. Search request cancelled.');
 	},
 	
 	searchForItems: function($items, selector){
@@ -55,10 +70,10 @@ var parser = {
 		background.items.newest = firstItem;
 		background.updateBadge();
 
-		chrome.storage.local.set({'item_list':background.items.list, 'newest':background.items.newest, 
+		/*chrome.storage.local.set({'item_list':background.items.list, 'newest':background.items.newest, 
 				    'badge_count':background.badgeCount}, function(){
 					console.log('** item_list and badge_count saved **');	
-		}); //end .each
+		}); //end .each */
 		
 	}, //-------------------------------------------------
 	
