@@ -16,8 +16,10 @@ var background = {
 		id: null
 	},  
 	badgeCount: 0,
+	pageIndex: 0,
+	newestFound: false,
 	requesting: false, // Indicates if an xmlhttprequest is running
-	searchUrl: 'http://ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html',
+	source: 'http://ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html',
 	start: function(){
 		//load settings and begin program
 		chrome.storage.local.get(['track_list', 'item_list',  'removed_list', 'newest', 'badge_count', 'interval'], 
@@ -84,7 +86,7 @@ var background = {
 		if(url)
 			pageUrl = url;
 		else
-			pageUrl = background.searchUrl;
+			pageUrl = background.source;
 		if(time)
 		{
 			background.interval.time = time;	
@@ -101,7 +103,9 @@ var background = {
 		}
 		else
 			console.log('A request is already in progress. A new one cannot be sent.');
-		background.interval.id = window.setInterval(function(){background.checkPage(pageUrl)}, background.interval.time);
+		background.interval.id = window.setInterval(function(){
+				background.checkPage(pageUrl);
+			}, background.interval.time);
 		console.log('interval.id set.');
 	},
 	
@@ -120,32 +124,27 @@ var background = {
 	},
 	
 	checkPage: function(url){
+		var url = background.getPageUrl(background.pageIndex);
+
 		if(url && background.tracking.list.length){
 			background.getPageSource(url, function(data){
-				background.searchPageSource(data);
-				background.save();
-				});
-		}
+					background.newestFound = background.searchPageSource(data);
+					if(background.newestFound == false){
+						background.pageIndex++;
+						console.log('Next page needed.');
+					}
+
+			}); //end getPageSource
+		} // end if url && ...
 		else
 			console.log('Invalid url or empty tracking list. Page request not sent.');
+		background.save();
+
 	},
 	
 	searchPageSource: function(page){
-		var viewMode = parser.getView(page);
-		switch(viewMode.view){
-			case 'thumbnail':
-				parser.searchForItems(viewMode.$itemlist.find('td[style]'), 'h5');
-				break;
-			case 'image':
-				parser.searchForItems(viewMode.$itemlist.find('table[style]'), 'h1');
-				break;
-			case 'no_image':
-				parser.searchForItems(viewMode.$itemlist.find('tr'), '.list_text');
-				break;
-			default:
-				console.log('View mode could not be determined. Search request cancelled.');
-				break;
-		}
+		background.viewMode = parser.getView(page);
+		return parser.searchForItems(background.viewMode.$items, background.viewMode.selector);
 	},
 	
 	removeItem: function(url){
@@ -180,10 +179,17 @@ var background = {
 	
 	save: function(){
 		chrome.storage.local.set({'item_list':background.items.list, 'newest':background.items.newest, 
-				'removed_list':background.removed_list, 'interval':background.interval.time,
+				'removed_list':background.items.removed, 'interval':background.interval.time,
 				 'badge_count':background.badgeCount}, function(){
 				console.log('Background saved.');	
 		});
+	},
+	
+	getPageUrl: function(index){
+		if(index == 0)
+			return background.source;
+		return 'http://ekizo.mandarake.co.jp/shop/en/search.do?action=setSearchedList&searchedListIndex='+
+					index +'&searchStrategy=keyword';
 	},
 	
 	onRequest: function(request, sender){
@@ -203,7 +209,7 @@ var background = {
 				break;
 			case 'change_url':
 				console.log('change_url request received.');
-				background.searchUrl = request.url;
+				background.source = request.url;
 				background.setNewInterval();
 				break;
 			case 'reset':

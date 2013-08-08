@@ -11,22 +11,24 @@ var parser = {
 		$itemlist = $(doc).find('#itemlist');
 		if($itemlist.find('h5:first').length){
 			console.log('View Mode: Thumbnail');
-			return {view:'thumbnail', $itemlist:$itemlist};
+			return {view:'thumbnail', $items:$itemlist.find('td[style]'), selector:'h5'};
 			//parser.searchForItems($itemlist.find('td[style]'), 'h5');
 		}
 		else if($itemlist.find('h1:first').length){
 			console.log('View Mode: with image');
-			return {view:'image', $itemlist:$itemlist};
+			return {view:'image', $items:$itemlist.find('table[style]'), selector:'h1'};
 			//parser.searchForItems($itemlist.find('table[style]'), 'h1');
 		}
 		else if($itemlist.find('.list_text:first').length){
 			console.log('View Mode: without image');
-			return {view:'no_image', $itemlist:$itemlist};
+			return {view:'no_image', $items:$itemlist.find('tr'), selector:'.list_text'};
 			//parser.searchForItems($itemlist.find('tr'), '.list_text');
 		}
 		else
-			return {view:'unknown', $itemlist:$itemlist};
-			//console.log('View mode could not be determined. Search request cancelled.');
+		{
+			console.log('View mode could not be determined.');
+			return false;
+		}
 	},
 	
 	searchForItems: function($items, selector){
@@ -36,6 +38,7 @@ var parser = {
 		var firstItem = $items.first().find(selector).text().trim();
 		firstItem = firstItem.replace(/\s{2,}/g, ' '); //replace multiple spaces and tabs
 		var details;
+		var found = false;
 		$items.each(function(){
 			details = $(this).find(selector).text().trim();
 			details = details.replace(/\s{2,}/g, ' ');
@@ -58,17 +61,20 @@ var parser = {
 					}
 				}
 			}
-			else{
+			else{ // newest found
 				console.log('Stop item found. Stopping seach.');
-				return false; //break out of .each loop
+				found = true;
+
+				return false; //break out of .each loop 
 			}
 		}); //end source.find
 		
 		console.log("---SEARCH COMPLETE---");
 		console.log(background.items.list);
 		console.log('Item count: ' + Object.keys(background.items.list).length);
-		background.items.newest = firstItem;
 		background.updateBadge();
+		background.items.newest = firstItem;
+		return found; //newest not found
 
 		/*chrome.storage.local.set({'item_list':background.items.list, 'newest':background.items.newest, 
 				    'badge_count':background.badgeCount}, function(){

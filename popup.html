@@ -1,13 +1,16 @@
 <html>
 <head>
   <style type="text/css">
-    body{width: 400px; font-family: Helvetica, Arial, sans-serif; font-size: 10px;}
+    body{width: 500px; max-height:650px; font-family: Helvetica, Arial, sans-serif; font-size: 12px; }
 	li {padding: 5px 0px 5px 0px; list-style-type: none;}
 	li:hover{background-color:#e5e5e5}
 	.item {text-decoration:none;}
-	.remove{margin-right: 1em; text-decoration:none; color:#cd0000;}
-	#figure_list{padding-left: 20px }
+	.remove{margin-right: 1em; text-decoration:none; color:#cd0000; font-weight:bold}
+	#figure_list{padding-left: 5px; padding-bottom: 10px}
 	#title{font-size: 14px; border-bottom: thin black dashed; margin-top: 0px; margin-bottom: 4px;}
+	.nav {text-decoration: none; color:#999}
+	.nav:hover {color:#000}
+	#page_nav { font-size:14px; position:fixed; bottom:0; text-align:center; left: 220px}
   </style>
   <script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>
   <script type="text/javascript" src="js/popup.js"></script>
@@ -19,5 +22,8 @@
 <h4 id="title">Mandrake Tracker</h4>
 <div id="status"></div>
 <div id="content"><ul id="figure_list"></ul></div>
+<div id="page_nav" >
+	<a href="#" id="back" class="nav">back </a><span id="page"></span><a href="#" id="next" class="nav"> next</a>
+</div>
 </body>
 </html>

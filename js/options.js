@@ -115,6 +115,7 @@ var options = {
 			console.log('Interval is invalid or same as current. No changes made.');
 	},
 	
+	
 	changeUrl: function(){
 		var pattern = new RegExp( '^ekizo.mandarake.co.jp/shop/en/')
 		var newUrl = $('#url').val();
