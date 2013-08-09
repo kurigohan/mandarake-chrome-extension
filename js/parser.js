@@ -31,60 +31,65 @@ var parser = {
 		}
 	},
 	
-	searchForItems: function($items, selector){
-		console.log('Parsing document...\n---START SEARCH---');
+	searchForItems: function($items, selector, pageIndex){
 		console.log(background.tracking.list);
-		console.log('Stop at this item:\n'+background.items.newest);
-		var firstItem = $items.first().find(selector).text().trim();
-		firstItem = firstItem.replace(/\s{2,}/g, ' '); //replace multiple spaces and tabs
+		console.log('Stop at this item:\n'+background.items.lastNewest);
+		console.log('Parsing document...\n********************\n---START SEARCH---');
+		//var firstItem = $items.first().find(selector).text().trim();
+		//firstItem = firstItem.replace(/\s{2,}/g, ' '); //replace multiple spaces and tabs
+		if(pageIndex == 0){
+			background.items.currentNewest = $items.first().find('a:first').attr('href');
+			console.log('Current newest: ' + background.items.currentNewest);
+		}
 		var details;
+		var url;
 		var found = false;
 		$items.each(function(){
+			url = $(this).find('a:first').attr('href');
 			details = $(this).find(selector).text().trim();
-			details = details.replace(/\s{2,}/g, ' ');
-			if(details != background.items.newest){
+			//details = details.replace(/\s{2,}/g, ' ');
+			if(url != background.items.lastNewest){
 				console.log('Checking: ' + details);
+				console.log('Link: ' + url + '\n-------------------');
 				for(var i=0, len=background.tracking.list.length; i<len; ++i)
 				{	
 					if(parser.compare(details, background.tracking.list[i]))
 					{
-						console.log('^^^^MATCH FOUND^^^^');	
-						url = $(this).find('a:first').attr('href');
-						console.log('Link: ' + url + '\n-------------------');
-						if(!(url in background.items.removed) && !(url in background.items.list)){
+						console.log('^^^^MATCH FOUND^^^^');
+						if(!(url in background.items.list)){
 							background.items.list[url] = details;
 							background.badgeCount++;
 						}
 						else
-							console.log('-- Not added. Exists in items.removed or already in items.list.');
+							console.log('-- Not added. Already in items.list.');
 						break; //Stop checking for matchs to avoid duplicate items
 					}
 				}
 			}
 			else{ // newest found
 				console.log('Stop item found. Stopping seach.');
-				found = true;
-
+				background.items.lastNewestFound = true;
+				console.log('Last newest set to current newest.');
+				background.items.lastNewest = background.items.currentNewest;
 				return false; //break out of .each loop 
 			}
 		}); //end source.find
 		
 		console.log("---SEARCH COMPLETE---");
 		console.log(background.items.list);
-		console.log('Item count: ' + Object.keys(background.items.list).length);
+		console.log('Item count: ' + Object.keys(background.items.list).length + '\n********************');
 		background.updateBadge();
-		background.items.newest = firstItem;
-		return found; //newest not found
-
-		/*chrome.storage.local.set({'item_list':background.items.list, 'newest':background.items.newest, 
-				    'badge_count':background.badgeCount}, function(){
-					console.log('** item_list and badge_count saved **');	
-		}); //end .each */
+		background.save();
+		/*chrome.storage.local.set({'item_list':background.items.list, 'removed_list':background.items.removed,
+				 'last_newest':background.items.lastNewest, 'badge_count':background.badgeCount}, function(){
+					console.log('item_list, removed_list, last_newest, and badge_count saved.');	
+		}); //end storage */
 		
 	}, //-------------------------------------------------
 	
 	compare: function(str1, str2){
-		var pattern = new RegExp( str2.toLowerCase().replace(/ /g, '.*'));
+											//match any character and newline
+		var pattern = new RegExp( str2.toLowerCase().replace(/ /g, '(.|\n)*'));
 		return pattern.test(str1.toLowerCase());
 	}
 }

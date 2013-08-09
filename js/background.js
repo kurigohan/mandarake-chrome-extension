@@ -2,10 +2,11 @@
 var background = {
 	items: {
 		list: {}, 
-		removed: {}, // stores urls that were removed by the user in popup. 
+		//removed: {}, // stores urls that were removed by the user in popup. 
 					 // ensures parser.searchForItems() doesn't add removed items to items.list again.
-			   	     // using object for faster searching since it provides hashing.
-		newest: '', // parser.searchForItems() will stop when this is encountered
+		lastNewest: '', // parser.searchForItems() will stop when this is encountered
+		currentNewest: '', // holds the current newest item while last newest item is being searched for
+		lastNewestFound: false,
 		changed: false	
 	},
 	tracking: {
@@ -15,16 +16,21 @@ var background = {
 		time: 300000, // default interval (5 minutes)
 		id: null
 	},  
+	searchPage: {
+		source: 'http://ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html',
+		index: 0, // current display page index; used to get the next page url
+		limit: 5 // max number of pages to search
+	},
 	badgeCount: 0,
-	pageIndex: 0,
-	newestFound: false,
 	requesting: false, // Indicates if an xmlhttprequest is running
-	source: 'http://ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html',
+	
 	start: function(){
 		//load settings and begin program
-		chrome.storage.local.get(['track_list', 'item_list',  'removed_list', 'newest', 'badge_count', 'interval'], 
+		chrome.storage.local.get(['track_list', 'item_list',  'removed_list', 'last_newest', 
+									'search_source', 'search_limit','badge_count', 'interval'], 
 			function(data){
 				background.setVariables(data);
+				//background.items.lastNewest = background.items.lastNewest.replace(/\s{2,}/g, ' ');
 				background.updateBadge();
 				background.setNewInterval();		
 		});	
@@ -47,21 +53,38 @@ var background = {
 		else
 			console.log('No item_list found in storage.');
 		
-		if(typeof data.removed_list !== 'undefined'){
+		/*if(typeof data.removed_list !== 'undefined'){
 			background.items.removed = data.removed_list;
-			console.log('removed list loaded: ');
+			console.log('Removed list loaded: ');
 			console.log(background.items.removed);
 		}
 		else
-			console.log('No removed_list found in storage.');
+			console.log('No removed_list found in storage.');*/
 		
-		if(typeof data.newest !== 'undefined'){
-			background.items.newest = data.newest;
-			console.log('Newest item loaded: ');
-			console.log(background.items.newest);
+		if(typeof data.last_newest !== 'undefined'){
+			background.items.lastNewest = data.last_newest;
+			console.log('Last newest item loaded: ');
+			console.log(background.items.lastNewest);
 		}
 		else
-			console.log('No newest found in storage.');
+			console.log('No last_newest found in storage.');
+			
+			
+		if(typeof data.search_source !== 'undefined')
+		{
+			background.searchPage.source = data.search_source;
+			console.log('Search page source loaded: ' + background.searchPage.source);
+		}
+		else
+			console.log('No search_source found in storage.');
+			
+		if(typeof data.search_limit !== 'undefined')
+		{
+			background.searchPage.limit = data.search_limit;
+			console.log('Search page limit loaded: ' + background.searchPage.limit);
+		}
+		else
+			console.log('No search_limit found in storage.');
 			
 		if(typeof data.badge_count !== 'undefined')
 		{
@@ -69,7 +92,7 @@ var background = {
 			console.log('Badge count loaded: ' + background.badgeCount);
 		}
 		else
-			console.log('No track_list found in storage.');
+			console.log('No badge_count found in storage.');
 			
 		if(data.interval >= 300000 && data.interval <= 3600000)
 		{
@@ -86,7 +109,7 @@ var background = {
 		if(url)
 			pageUrl = url;
 		else
-			pageUrl = background.source;
+			pageUrl = background.searchPage.source;
 		if(time)
 		{
 			background.interval.time = time;	
@@ -118,19 +141,35 @@ var background = {
 			if (xhr.readyState == 4) {
 				callback(xhr.responseText);
 				background.requesting = false;
+				if(background.items.lastNewestFound == false){
+					var nextUrl = background.getPageUrl(background.searchPage.index);
+					console.log(nextUrl);
+					if(nextUrl != ''){
+						background.getPageSource(nextUrl, callback);
+					}
+					else{
+						console.log('Page limit reached. Stopping search');
+						background.searchPage.index = 0;
+						if(background.items.lastNewest == ''){
+							background.items.lastNewest = background.items.currentNewest;
+							console.log('lastNewest is empty. lastNewest set to currentNewest'); 
+						}
+						console.log(background.items.lastNewest);
+					}
+				}
 			}
 		};
 		xhr.send();
 	},
 	
 	checkPage: function(url){
-		var url = background.getPageUrl(background.pageIndex);
+		var url = background.getPageUrl(background.searchPage.index);
 
 		if(url && background.tracking.list.length){
 			background.getPageSource(url, function(data){
-					background.newestFound = background.searchPageSource(data);
-					if(background.newestFound == false){
-						background.pageIndex++;
+					background.searchPageSource(data);
+					if(background.items.lastNewestFound == false){
+						background.searchPage.index++;
 						console.log('Next page needed.');
 					}
 
@@ -144,12 +183,12 @@ var background = {
 	
 	searchPageSource: function(page){
 		background.viewMode = parser.getView(page);
-		return parser.searchForItems(background.viewMode.$items, background.viewMode.selector);
+		return parser.searchForItems(background.viewMode.$items, background.viewMode.selector, background.searchPage.index);
 	},
 	
 	removeItem: function(url){
 		delete background.items.list[url];
-		background.items.removed[url] = true;
+		//background.items.removed[url] = true;
 		background.badgeCount--;
 		background.updateBadge();
 		console.log(url + ' removed.');
@@ -171,25 +210,28 @@ var background = {
 	
 	changeTracking: function(newTracking){
 		background.tracking.list = newTracking.list;
-		if(newTracking.added) {
+		/*if(newTracking.added) {
 			// force parser.searchForItems() to search all listings since tracking list has new keys
-			background.items.newest = ''; 
-		}
+			background.items.lastNewest = ''; 
+		}*/
 	},
 	
 	save: function(){
-		chrome.storage.local.set({'item_list':background.items.list, 'newest':background.items.newest, 
-				'removed_list':background.items.removed, 'interval':background.interval.time,
-				 'badge_count':background.badgeCount}, function(){
+		chrome.storage.local.set({'item_list':background.items.list, 'last_newest':background.items.lastNewest, 
+				'interval':background.interval.time, 'search_source':background.searchPage.source,
+				 'search_limit':background.searchPage.limit, 'badge_count':background.badgeCount}, function(){
 				console.log('Background saved.');	
 		});
 	},
 	
 	getPageUrl: function(index){
+		console.log('Fetch Page index: ' + index);
 		if(index == 0)
-			return background.source;
-		return 'http://ekizo.mandarake.co.jp/shop/en/search.do?action=setSearchedList&searchedListIndex='+
+			return background.searchPage.source;
+		else if(index < background.searchPage.limit)
+			return 'http://ekizo.mandarake.co.jp/shop/en/search.do?action=setSearchedList&searchedListIndex='+
 					index +'&searchStrategy=keyword';
+		else return '';
 	},
 	
 	onRequest: function(request, sender){
@@ -207,17 +249,22 @@ var background = {
 				console.log('change_interval request received.');
 				background.setNewInterval(request.interval);
 				break;
+			case 'change_limit':
+				console.log('change_limit request received.');
+				background.searchPage.limit = request.limit;
+				console.log('searchPage.limit = ' + background.searchPage.limit);
+				break;
 			case 'change_url':
 				console.log('change_url request received.');
-				background.source = request.url;
+				background.searchPage.source = request.url;
 				background.setNewInterval();
 				break;
 			case 'reset':
 				console.log('reset request received.');
 				background.items.list = {};
-				background.items.newest = '';
+				background.items.lastNewest = '';
 				background.items.changed = false;
-				background.items.removed = {};
+				//background.items.removed = {};
 				background.tracking.list = [];
 				background.badgeCount = 0;
 				background.updateBadge();

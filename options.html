@@ -15,7 +15,7 @@
 	#tracking li{height:1.25em}
 	#tracking li:hover{font-weight:bold; background-color:#e5e5e5;}
 	#note{font-size: 14px; border: 1px solid #CCC;}
-	#limit{float: right; font-size: 14px; color:#CCC}
+	#track_limit{float: right; font-size: 14px; color:#CCC}
 	#save_list, #clear_list, #reset{margin:5px 0px 5px 0px;}
 	#input{margin-top: 10px}
 	#http{font-size: 12px; color:#999}
@@ -38,6 +38,7 @@
         <option>60 minutes</option>
     </select>
     <button id="apply_interval" class="float_right">Apply</button><br>
+    <label>Search page limit: </label><input id="search_limit" type="number" min="1" max="10" step="1" value="5"/><button id="apply_limit" class="float_right">Apply</button><br>
     <label>URL: </label><span id='http'>http://</span><input id="url"type="text" size="60" maxlength="128" value="ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html"/><button id="apply_url" class="float_right">Apply</button>
 </div>
 <br>
@@ -59,7 +60,7 @@
 </div>
 
 <div>
-	<h2>Keywords<span id="limit"></span></h2>
+	<h2>Keywords<span id="track_limit"></span></h2>
 	<ul id="tracking"></ul>
 
 <button id="save_list" class="float_right">Save</button>

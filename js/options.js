@@ -3,8 +3,8 @@
 var options = {
 	tracking: {
 		list: [],
-		added: false // set to true when a new item is added to the list
-					 // tells options.saveList to reset background.items.newest 
+		//added: false // set to true when a new item is added to the list
+					 // tells options.saveList to reset background.items.lastNewest 
 	},
 	listCount: 0,
 	interval: 300000,
@@ -13,13 +13,14 @@ var options = {
 		chrome.storage.local.get(['track_list','interval'], function(data){
 			options.setVariables(data);
 			options.appendElement(0); // display list
-			$('#limit').text(options.tracking.list.length + '/20');
+			options.updateTrackLimit();
 			
 			// Attach events to html
 			$('#add_item').click(options.addItem);
 			$('#save_list').click(options.saveList);
 			$('#clear_list').click(options.clearList);
 			$('#apply_interval').click(options.changeInterval);
+			$('#apply_limit').click(options.changeSearchLimit);
 			$('#apply_url').click(options.changeUrl);
 			$('#reset').click(options.resetAll);
 			// Attach event to dynamically generated html
@@ -29,6 +30,8 @@ var options = {
 					$(this).closest('li').remove();
 					$('#limit').text(options.listCount + '/20');
 				}
+				else
+					alert('Could not remove item.');
 			}); //end .on
 		}); // end local.get
 		
@@ -62,6 +65,7 @@ var options = {
 			console.log(options.tracking.list);
 			options.changed = true;
 			options.listCount--;
+			options.updateTrackLimit();
 			return true;
 		}
 		console.log('Remove failed.');
@@ -70,16 +74,16 @@ var options = {
 	},
 	
 	addItem: function(){
-		if(options.tracking.list.length < 20){
+		if(options.listCount < 20){
 			options.tracking.list.push($('#item').val());
 			$('#item').val('');
 			options.appendElement(options.tracking.list.length-1);
 			options.changed = true;
-			options.tracking.added = true;
+			//options.tracking.added = true;
 			console.log('Added.');
 			console.log(options.tracking.list);
 			options.listCount++;
-			$('#limit').text(options.listCount + '/20');
+			options.updateTrackLimit();
 		}
 		else
 		{
@@ -115,6 +119,17 @@ var options = {
 			console.log('Interval is invalid or same as current. No changes made.');
 	},
 	
+	changeSearchLimit: function(){
+		var searchLimit = parseInt($('#search_limit').val(), 10);
+		if(searchLimit > 0 && searchLimit <= 10){
+			console.log('Change search page limit: ' + searchLimit);
+			chrome.extension.sendRequest({action: 'change_limit', limit: searchLimit});
+		}
+		else{
+			console.log('Invalid search page limit.');
+			alert('Error: Invalid search page limit.');
+		}
+	},
 	
 	changeUrl: function(){
 		var pattern = new RegExp( '^ekizo.mandarake.co.jp/shop/en/')
@@ -132,9 +147,10 @@ var options = {
 	
 	clearList: function(){
 		options.tracking.list = [];
+		options.listCount = 0;
 		$('#tracking').html('');
 		options.changed = true;
-		$('#limit').text(options.tracking.list.length + '/20');
+		options.updateTrackLimit();
 	},
 	
 	saveList: function(){
@@ -148,7 +164,7 @@ var options = {
 				options.appendElement(0, true);
 				
 				chrome.extension.sendRequest({action: 'change_tracking', tracking: options.tracking});
-				options.tracking.added = false;
+				//options.tracking.added = false;
 				options.changed = false;
 
 				chrome.storage.local.set({'track_list':options.tracking.list}, function(){
@@ -157,6 +173,10 @@ var options = {
 				
 			}
 		} 
+	},
+	
+	updateTrackLimit: function(){
+		$('#track_limit').text(options.listCount + '/20');
 	},
 	
 	resetAll: function(){
