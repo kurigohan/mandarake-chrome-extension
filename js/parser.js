@@ -31,34 +31,35 @@ var parser = {
 		}
 	},
 	
-	searchForItems: function($items, selector, pageIndex){
-		console.log(background.tracking.list);
-		console.log('Stop at this item:\n'+background.items.lastNewest);
-		console.log('Parsing document...\n********************\n---START SEARCH---');
-		//var firstItem = $items.first().find(selector).text().trim();
-		//firstItem = firstItem.replace(/\s{2,}/g, ' '); //replace multiple spaces and tabs
-		if(pageIndex == 0){
-			background.items.currentNewest = $items.first().find('a:first').attr('href');
-			console.log('Current newest: ' + background.items.currentNewest);
+	searchForItems: function(view, bg){ //seletor, pageIndex){
+		console.log('Tracking list:');
+		console.log(bg.tracking.list);
+		var trackingList = parser.convertToRegex(bg.tracking.list);
+		if(bg.searchPage.index == 0){
+			bg.items.currentNewest = view.$items.first().find('a:first').attr('href');
+			console.log('Current newest: ' + bg.items.currentNewest);
 		}
+		console.log('Stop at this item: ' + bg.items.lastNewest);
+		console.log('Parsing document...\n********************\n---START SEARCH---');
 		var details;
 		var url;
 		var found = false;
-		$items.each(function(){
+		view.$items.each(function(){
 			url = $(this).find('a:first').attr('href');
-			details = $(this).find(selector).text().trim();
+			details = $(this).find(view.selector).text().trim();
 			//details = details.replace(/\s{2,}/g, ' ');
-			if(url != background.items.lastNewest){
+			if(url != bg.items.lastNewest){
+				bg.items.lastNewestFound = false;
 				console.log('Checking: ' + details);
 				console.log('Link: ' + url + '\n-------------------');
-				for(var i=0, len=background.tracking.list.length; i<len; ++i)
+				for(var i=0, len=trackingList.length; i<len; ++i)
 				{	
-					if(parser.compare(details, background.tracking.list[i]))
+					if(parser.compare(details, trackingList[i]))
 					{
 						console.log('^^^^MATCH FOUND^^^^');
-						if(!(url in background.items.list)){
-							background.items.list[url] = details;
-							background.badgeCount++;
+						if(!(url in bg.items.list) && !(url in bg.items.removed)){
+							bg.items.list[url] = details;
+							bg.badgeCount++;
 						}
 						else
 							console.log('-- Not added. Already in items.list.');
@@ -68,28 +69,38 @@ var parser = {
 			}
 			else{ // newest found
 				console.log('Stop item found. Stopping seach.');
-				background.items.lastNewestFound = true;
+				bg.items.lastNewestFound = true;
 				console.log('Last newest set to current newest.');
-				background.items.lastNewest = background.items.currentNewest;
+				bg.items.lastNewest = bg.items.currentNewest;
 				return false; //break out of .each loop 
 			}
 		}); //end source.find
 		
 		console.log("---SEARCH COMPLETE---");
-		console.log(background.items.list);
-		console.log('Item count: ' + Object.keys(background.items.list).length + '\n********************');
-		background.updateBadge();
-		background.save();
-		/*chrome.storage.local.set({'item_list':background.items.list, 'removed_list':background.items.removed,
-				 'last_newest':background.items.lastNewest, 'badge_count':background.badgeCount}, function(){
-					console.log('item_list, removed_list, last_newest, and badge_count saved.');	
-		}); //end storage */
+		console.log(bg.items.list);
+		console.log('Item count: ' + Object.keys(bg.items.list).length + '\n********************');
+		bg.updateBadge();
+		bg.save();
 		
-	}, //-------------------------------------------------
+	},
 	
-	compare: function(str1, str2){
-											//match any character and newline
-		var pattern = new RegExp( str2.toLowerCase().replace(/ /g, '(.|\n)*'));
-		return pattern.test(str1.toLowerCase());
+	compare: function(details, key){
+		var pattern = new RegExp(key);
+		return pattern.test(details.toLowerCase());
+	},
+	convertToRegex: function(list){
+		var newList = [];
+		for(var i=0, len=list.length; i<len; ++i)
+		{
+			newList.push(list[i].match(/\w+|"[^"]+"/g)
+						.join('(.|\\n)*')
+						.replace(/"/g, '')
+						.toLowerCase()
+						);
+		}
+		console.log('Converted tracking list items to regex:');
+		console.log(newList);
+		return newList;
 	}
+	
 }

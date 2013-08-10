@@ -4,6 +4,7 @@ var background = {
 		list: {}, 
 		//removed: {}, // stores urls that were removed by the user in popup. 
 					 // ensures parser.searchForItems() doesn't add removed items to items.list again.
+		removed: {},
 		lastNewest: '', // parser.searchForItems() will stop when this is encountered
 		currentNewest: '', // holds the current newest item while last newest item is being searched for
 		lastNewestFound: false,
@@ -30,7 +31,6 @@ var background = {
 									'search_source', 'search_limit','badge_count', 'interval'], 
 			function(data){
 				background.setVariables(data);
-				//background.items.lastNewest = background.items.lastNewest.replace(/\s{2,}/g, ' ');
 				background.updateBadge();
 				background.setNewInterval();		
 		});	
@@ -53,13 +53,13 @@ var background = {
 		else
 			console.log('No item_list found in storage.');
 		
-		/*if(typeof data.removed_list !== 'undefined'){
+		if(typeof data.removed_list !== 'undefined'){
 			background.items.removed = data.removed_list;
 			console.log('Removed list loaded: ');
 			console.log(background.items.removed);
 		}
 		else
-			console.log('No removed_list found in storage.');*/
+			console.log('No removed_list found in storage.');
 		
 		if(typeof data.last_newest !== 'undefined'){
 			background.items.lastNewest = data.last_newest;
@@ -110,13 +110,10 @@ var background = {
 			pageUrl = url;
 		else
 			pageUrl = background.searchPage.source;
-		if(time)
-		{
+		if(!isNaN(time) && time!=background.interval.time){
 			background.interval.time = time;	
-			/*chrome.storage.local.set({'interval':background.interval.time}, function(){
-				console.log('interval saved.')
-			});*/
 		}
+
 		if(background.interval.id){
 			window.clearInterval(background.interval.id)
 			console.log('interval.id cleared.');
@@ -126,10 +123,11 @@ var background = {
 		}
 		else
 			console.log('A request is already in progress. A new one cannot be sent.');
-		background.interval.id = window.setInterval(function(){
-				background.checkPage(pageUrl);
-			}, background.interval.time);
+			
+		background.interval.id = window.setInterval(function(){background.checkPage(pageUrl)}
+																, background.interval.time);
 		console.log('interval.id set.');
+		return true;
 	},
 	
 	getPageSource: function(url, callback) {
@@ -141,6 +139,7 @@ var background = {
 			if (xhr.readyState == 4) {
 				callback(xhr.responseText);
 				background.requesting = false;
+				
 				if(background.items.lastNewestFound == false){
 					var nextUrl = background.getPageUrl(background.searchPage.index);
 					console.log(nextUrl);
@@ -150,10 +149,10 @@ var background = {
 					else{
 						console.log('Page limit reached. Stopping search');
 						background.searchPage.index = 0;
-						if(background.items.lastNewest == ''){
-							background.items.lastNewest = background.items.currentNewest;
-							console.log('lastNewest is empty. lastNewest set to currentNewest'); 
-						}
+						//if(background.items.lastNewest == ''){
+						background.items.lastNewest = background.items.currentNewest;
+						console.log('lastNewest set to currentNewest.'); 
+						//}
 						console.log(background.items.lastNewest);
 					}
 				}
@@ -177,26 +176,20 @@ var background = {
 		} // end if url && ...
 		else
 			console.log('Invalid url or empty tracking list. Page request not sent.');
-		background.save();
-
 	},
 	
 	searchPageSource: function(page){
 		background.viewMode = parser.getView(page);
-		return parser.searchForItems(background.viewMode.$items, background.viewMode.selector, background.searchPage.index);
+		parser.searchForItems(background.viewMode, this);
 	},
 	
 	removeItem: function(url){
 		delete background.items.list[url];
-		//background.items.removed[url] = true;
+		background.items.removed[url] = true;
 		background.badgeCount--;
 		background.updateBadge();
 		console.log(url + ' removed.');
 		console.log(background.items.list);
-		/*chrome.storage.local.set({'item_list':background.items.list, 'removed_list':background.items.removed, 
-									'badge_count':background.badgeCount}, function(){
-			console.log('item_list, removed_list, badge_count saved');
-		});*/
 	},
 	
 	updateBadge: function(){
@@ -218,8 +211,9 @@ var background = {
 	
 	save: function(){
 		chrome.storage.local.set({'item_list':background.items.list, 'last_newest':background.items.lastNewest, 
-				'interval':background.interval.time, 'search_source':background.searchPage.source,
-				 'search_limit':background.searchPage.limit, 'badge_count':background.badgeCount}, function(){
+		 'track_list':background.tracking.list, 'removed_list':background.items.removed,
+		 'interval':background.interval.time, 'search_source':background.searchPage.source,
+		 'search_limit':background.searchPage.limit, 'badge_count':background.badgeCount}, function(){
 				console.log('Background saved.');	
 		});
 	},
@@ -254,9 +248,9 @@ var background = {
 				background.searchPage.limit = request.limit;
 				console.log('searchPage.limit = ' + background.searchPage.limit);
 				break;
-			case 'change_url':
-				console.log('change_url request received.');
-				background.searchPage.source = request.url;
+			case 'change_source':
+				console.log('change_source request received.');
+				background.searchPage.source = request.source;
 				background.setNewInterval();
 				break;
 			case 'reset':

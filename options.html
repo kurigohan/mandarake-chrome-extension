@@ -3,8 +3,11 @@
 <head>
 <meta charset="utf-8">
 <style type="text/css">
-	body{ width: 600px; margin:auto;font-size:16px; font-family: Helvetica, Arial, sans-serif;}
-	div{padding: 6px; }
+	*{ font-family: Helvetica, Arial, sans-serif;}
+	html{height:100%}
+	body{ height: 100%; width: 800px; margin:auto; font-size:16px; background-color: #071232;}
+	.wrapper{ background-color:#FFF; border-width: 0px 6px;border-style: solid;border-color: #ae0000; height: 100%}
+	div{padding: 6px;}
 	h3{margin-left:20px;}
 	button{ font-size: 14px; margin:auto; width:6em }
 	.float_right{float: right; clear:both;}
@@ -26,48 +29,60 @@
 </head>
 
 <body>
-<h1> Mandrake Tracker Options</h1>
-<div id="options">
-    <label>Set interval between checks: </label>
-    <select id="interval">
-        <option>5 minutes</option>
-        <option>10 minutes</option>
-        <option>15 minutes</option>
-        <option>30 minutes</option>
-        <option>45 minutes</option>
-        <option>60 minutes</option>
-    </select>
-    <button id="apply_interval" class="float_right">Apply</button><br>
-    <label>Search page limit: </label><input id="search_limit" type="number" min="1" max="10" step="1" value="5"/><button id="apply_limit" class="float_right">Apply</button><br>
-    <label>URL: </label><span id='http'>http://</span><input id="url"type="text" size="60" maxlength="128" value="ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html"/><button id="apply_url" class="float_right">Apply</button>
-</div>
-<br>
-
-<div id="note">
-<h3>Please note when adding keywords:</h3>
-	<ul>
-    	<li>Keywords or phrases can be up to 50 characters long.</li>
-        <li>You can store up to 20 keywords or phrases.</li>
-    	<li>They are case-insensitive. <span class='example'>e.g. 'ALTER' is the same as 'alter'.</span></li>
-    	<li>Word order matters in phrases. <span class='example'>e.g. 'Good Company Smile' is not the same as 'Good 		Smile Company'.</span></li>
-        <li>Phrases will match with an item description as long as all the words in the phrase appear somewhere in the description (order still matters). <span class='example'>e.g. The key phrase 'nakano saber figure' will match with '[Nakano] Alter Saber Lily 1/8 Figure'.</span></li>   
+<div class="wrapper">
+    <h1> MANDRAKE TRACKER OPTIONS</h1>
+    <div id="options">
+        <label>Set interval between checks: </label>
+        <select id="interval">
+            <option>5 minutes</option>
+            <option>10 minutes</option>
+            <option>15 minutes</option>
+            <option>30 minutes</option>
+            <option>45 minutes</option>
+            <option>60 minutes</option>
+        </select><br>
+        <label>Search page limit: </label>
+        <input id="search_limit" type="number" min="1" max="10" step="1" value="5"/><br>
+        <!--<label>URL: </label><span id='http'>http://</span><input id="url"type="text" size="60" maxlength="128" value="ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html"/><button id="apply_url" class="float_right">Apply</button>-->
+        <label>Search category: </label>
+        <select id="category">
+        	<option>All</option>
+            <option disabled>——————</option>
+            <option value="bishoujo" selected>Bishoujo Figure</option>
+            <option value="model">Model Kit</option>
+            <option value="doll">Doll</option>
+            <option value="gokin">Gokin</option>
+        </select>
+         <button id="apply_settings" class="float_right">Apply</button>
+    </div>
+    <br>
     
-    </ul>
-</div>
-
-<div id="input">
-<input id="item" type="text" maxlength="50" size="50"/><button id="add_item" class="float_right">Add</button>
-</div>
-
-<div>
-	<h2>Keywords<span id="track_limit"></span></h2>
-	<ul id="tracking"></ul>
-
-<button id="save_list" class="float_right">Save</button>
-<br>
-<button id="clear_list" class="float_right">Clear</button>
-<br>
-<button id="reset" class="float_right">Reset</button>
+    <div id="note">
+    <h3>Please note when adding keywords:</h3>
+        <ul>
+            <li>Keywords or phrases can be up to 50 characters long.</li>
+            <li>You can store up to 20 keywords or phrases.</li>
+            <li>They are case-insensitive. <span class='example'>e.g. 'ALTER' is the same as 'alter'.</span></li>
+            <li>Phrases will match with an item description as long as all the words in the phrase appear somewhere in the description. <span class='example'>e.g. The key phrase 'nakano saber figure' will match with '[Nakano] Alter Saber Lily 1/8 Figure'.</span></li>   
+            <li>Word order matters in phrases. <span class='example'>e.g. 'Good Company Smile' is not the same as 'Good 		Smile Company'.</span></li>
+    
+        </ul>
+    </div>
+    
+    <div id="input">
+    <input id="keyword" type="text" maxlength="50" size="50"/><button id="add_keyword" class="float_right">Add</button>
+    </div>
+    
+    <div>
+        <h2>KEYWORDS<span id="track_limit"></span></h2>
+        <ul id="tracking"></ul>
+    
+    <button id="save_list" class="float_right">Save</button>
+    <br>
+    <button id="clear_list" class="float_right">Clear</button>
+    <br>
+    <button id="reset" class="float_right">Reset</button>
+    </div>
 </div>
 </body>
 </html>

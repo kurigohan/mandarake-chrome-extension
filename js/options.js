@@ -4,20 +4,35 @@ var options = {
 	tracking: {
 		list: [],
 		//added: false // set to true when a new item is added to the list
-					 // tells options.saveList to reset background.items.lastNewest 
+					 // tells options.saveTrackList to reset background.items.lastNewest 
 	},
 	listCount: 0,
-	interval: 300000,
-	changed: false,
+	changed: {
+		checkinterval: false,
+		searchLimit: false, 
+		searchSource: false,
+		trackList: false,
+	},
 	start: function(){
-		chrome.storage.local.get(['track_list','interval'], function(data){
+		chrome.storage.local.get(['track_list', 'interval', 'search_limit', 'category'], function(data){
 			options.setVariables(data);
 			options.appendElement(0); // display list
 			options.updateTrackLimit();
-			
-			// Attach events to html
-			$('#add_item').click(options.addItem);
-			$('#save_list').click(options.saveList);
+			$('#interval').change(function(){
+				console.log('Interval changed');
+				options.changed.checkinterval = true;
+			});
+			$('#search_limit').change(function(){
+				console.log('Search limit changed');
+				options.changed.searchLimit = true;
+			});
+			$('#category').change(function(){
+				console.log('Search source changed');
+				options.changed.searchSource = true;
+			});
+			$('#apply_settings').click(options.applySettings);
+			$('#add_keyword').click(options.addItem);
+			$('#save_list').click(options.saveTrackList);
 			$('#clear_list').click(options.clearList);
 			$('#apply_interval').click(options.changeInterval);
 			$('#apply_limit').click(options.changeSearchLimit);
@@ -49,11 +64,27 @@ var options = {
 			console.log('No track_list found in storage.');
 		if(typeof data.interval !== 'undefined')
 		{
-			options.interval = data.interval;
-			console.log('interval loaded: ' + options.interval);
+			$('#interval').val(data.interval/60000 + ' minutes');
+			console.log('interval loaded: ' + data.interval);
 		}
 		else
 			console.log('No interval found in storage.');
+			
+		if(typeof data.search_limit !== 'undefined')
+		{
+			$('#search_limit').val(data.search_limit);
+			console.log('search_limit loaded: ' + data.search_limit);
+		}
+		else
+			console.log('No search_limit found in storage.');
+			
+		if(typeof data.category !== 'undefined')
+		{
+			$('#category').val(data.category);
+			console.log('category loaded: ' + data.category);
+		}
+		else
+			console.log('No category found in storage.');
 		
 	},
 	
@@ -63,7 +94,7 @@ var options = {
 			options.tracking.list[index] = '';
 			console.log('Removed at ' + index);
 			console.log(options.tracking.list);
-			options.changed = true;
+			options.changed.trackList = true;
 			options.listCount--;
 			options.updateTrackLimit();
 			return true;
@@ -75,15 +106,21 @@ var options = {
 	
 	addItem: function(){
 		if(options.listCount < 20){
-			options.tracking.list.push($('#item').val());
-			$('#item').val('');
-			options.appendElement(options.tracking.list.length-1);
-			options.changed = true;
-			//options.tracking.added = true;
-			console.log('Added.');
-			console.log(options.tracking.list);
-			options.listCount++;
-			options.updateTrackLimit();
+			var newKey = $('#keyword').val();
+			if(options.tracking.list.indexOf(newKey) == -1){
+				options.tracking.list.push(newKey);
+				options.appendElement(options.tracking.list.length-1);
+				options.changed.trackList = true;
+				console.log('Added: ' + newKey);
+				console.log(options.tracking.list);
+				options.listCount++;
+				options.updateTrackLimit();
+			}
+			else
+			{
+				console.log('Keyword not added. Already exists.');
+				alert('Keyword already exists.');
+			}
 		}
 		else
 		{
@@ -106,14 +143,13 @@ var options = {
 	},
 	
 	changeInterval: function(){
-		var newInterval =  parseInt($('#interval').find(':selected').text(), 10) * 60000;
+		var newInterval =  parseInt($('#interval').find(':selected').text(), 10);
 		console.log('Change interval to ' + newInterval);
 		// make sure interval different from current and is within the range 5 - 60 minutes
-		if(newInterval!=options.interval && newInterval>=300000 && newInterval<=3600000) 
+		if(newInterval>=5 && newInterval<=60) 
 		{
-			options.interval = newInterval;
-			chrome.extension.sendRequest({action: 'change_interval', interval: newInterval});
-			alert('Interval changed to ' + newInterval/60000 + ' minutes.');
+			chrome.extension.sendRequest({action: 'change_interval', interval: newInterval*60000});
+			alert('Interval changed to ' + newInterval + ' minutes.');
 		}
 		else
 			console.log('Interval is invalid or same as current. No changes made.');
@@ -124,10 +160,36 @@ var options = {
 		if(searchLimit > 0 && searchLimit <= 10){
 			console.log('Change search page limit: ' + searchLimit);
 			chrome.extension.sendRequest({action: 'change_limit', limit: searchLimit});
+			alert('Page limit changed to ' + searchLimit);
 		}
 		else{
 			console.log('Invalid search page limit.');
 			alert('Error: Invalid search page limit.');
+		}
+	},
+	
+	changeSearchSource: function(){
+		var category = $('#category').find(':selected').val();
+		console.log(category);
+		var newSource;
+		if(category == 'all')
+			newSource = 'http://ekizo.mandarake.co.jp/shop/en/search.do?action=whatsNew&doujin=all&displayDate=0';
+		else if(category == 'doll')
+			newSource = 'http://ekizo.mandarake.co.jp/shop/en/category-doll.html';
+		else if(category == 'bishoujo')
+			newSource = 'http://ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html';
+		else if(category == 'model')
+			newSource = 'http://ekizo.mandarake.co.jp/shop/en/category-model-kit.html';
+		else if(category == 'action')
+			newSource = 'http://ekizo.mandarake.co.jp/shop/en/category-action-figure.html';
+		else if(category == 'gokin')
+			newSource = 'http://ekizo.mandarake.co.jp/shop/en/category-gokin.html';
+		else
+			console.log('Invalid category.');
+		if(newSource){
+			console.log('Change url: ' + newSource)
+			chrome.extension.sendRequest({action:'change_source', source:newSource});
+			chrome.storage.local.set({'category':category}, function(){console.log('category saved.')});
 		}
 	},
 	
@@ -149,12 +211,27 @@ var options = {
 		options.tracking.list = [];
 		options.listCount = 0;
 		$('#tracking').html('');
-		options.changed = true;
+		options.changed.trackList = true;
 		options.updateTrackLimit();
 	},
 	
-	saveList: function(){
-		if(options.changed){
+	applySettings: function(){
+		if(options.changed.checkinterval){
+			options.changed.checkinterval = false;
+			options.changeInterval();
+		}
+		else if(options.changed.searchLimit){
+			options.changed.searchLimit = false;
+			options.changeSearchLimit();	
+		}
+		else if(options.changed.searchSource){
+			options.changed.searchSource = false;
+			options.changeSearchSource();	
+		}
+	},
+	
+	saveTrackList: function(){
+		if(options.changed.trackList){
 			if(confirm('Save changes to the tracking list?'))
 			{
 				options.tracking.list = options.tracking.list.filter(function(s){return s!==''});
@@ -165,7 +242,7 @@ var options = {
 				
 				chrome.extension.sendRequest({action: 'change_tracking', tracking: options.tracking});
 				//options.tracking.added = false;
-				options.changed = false;
+				options.changed.trackList = false;
 
 				chrome.storage.local.set({'track_list':options.tracking.list}, function(){
 						console.log('** options.tracking.list saved **');

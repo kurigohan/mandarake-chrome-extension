@@ -4,6 +4,10 @@
     "default_icon": "img/icon.png",
     "default_popup": "popup.html"
   },
+  "icons": {
+    "128": "img/icon_128.png",
+    "64": "img/icon_64.png"
+  },
   "background": {
     "scripts":["js/jquery-2.0.3.min.js","js/parser.js", "js/background.js"]
   },
@@ -13,6 +17,6 @@
   "offline_enabled": false,
   "options_page": "options.html",
   "permissions": ["storage", "tabs", "http://ekizo.mandarake.co.jp/*"],
-  "version": "0.7"
+  "version": "0.8"
  
 }
