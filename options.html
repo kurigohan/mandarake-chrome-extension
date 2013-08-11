@@ -5,21 +5,24 @@
 <style type="text/css">
 	*{ font-family: Helvetica, Arial, sans-serif;}
 	html{height:100%}
-	body{ height: 100%; width: 800px; margin:auto; font-size:16px; background-color: #071232;}
-	.wrapper{ background-color:#FFF; border-width: 0px 6px;border-style: solid;border-color: #ae0000; height: 100%}
+	body{ height: 100%; width: 800px; margin:auto; font-size:16px; background-color: #1c294d;}
+	.wrapper{ background-color:#FFF; border-width: 0px 6px;border-style: solid;border-color: #b23535; height: 100%;	
+	box-shadow: 0 0 15px #000;}
 	div{padding: 6px;}
-	h3{margin-left:20px;}
-	button{ font-size: 14px; margin:auto; width:6em }
-	.float_right{float: right; clear:both;}
+	h3{margin:0px;background: url(img/open.png) no-repeat 0 11px;padding: 10px 0 0 25px;cursor: pointer;}
+	h3.close {background-image: url(img/close.png);}
+	h2{display:inline}
+	button{ font-size: 14px;  width:6em }
+	.float_right{float: right; margin-left:5px}
 	.example {font-size: 12px; color:#999}
 	.remove{float:right; text-decoration:none;color:#cd0000; }
+	#add_keyword{margin-left: 10px}
 	#options{border: 1px solid #CCC;}
-	#tracking{margin-top:5px; overflow:auto;}
+	#tracking{margin-top:5px; overflow:scroll;}
 	#tracking li{height:1.25em}
 	#tracking li:hover{font-weight:bold; background-color:#e5e5e5;}
 	#note{font-size: 14px; border: 1px solid #CCC;}
-	#track_limit{float: right; font-size: 14px; color:#CCC}
-	#save_list, #clear_list, #reset{margin:5px 0px 5px 0px;}
+	#track_limit{margin-left: 10px; font-size: 14px; color:#CCC}
 	#input{margin-top: 10px}
 	#http{font-size: 12px; color:#999}
 </style>
@@ -32,7 +35,7 @@
 <div class="wrapper">
     <h1> MANDRAKE TRACKER OPTIONS</h1>
     <div id="options">
-        <label>Set interval between checks: </label>
+        <label title="Time interval between searches">Search interval: </label>
         <select id="interval">
             <option>5 minutes</option>
             <option>10 minutes</option>
@@ -41,10 +44,10 @@
             <option>45 minutes</option>
             <option>60 minutes</option>
         </select><br>
-        <label>Search page limit: </label>
+        <label title="Maximum number pages to search">Search page limit: </label>
         <input id="search_limit" type="number" min="1" max="10" step="1" value="5"/><br>
         <!--<label>URL: </label><span id='http'>http://</span><input id="url"type="text" size="60" maxlength="128" value="ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html"/><button id="apply_url" class="float_right">Apply</button>-->
-        <label>Search category: </label>
+        <label title="Category to search">Search category: </label>
         <select id="category">
         	<option>All</option>
             <option disabled>——————</option>
@@ -58,30 +61,26 @@
     <br>
     
     <div id="note">
-    <h3>Please note when adding keywords:</h3>
-        <ul>
-            <li>Keywords or phrases can be up to 50 characters long.</li>
-            <li>You can store up to 20 keywords or phrases.</li>
+    <h3>Keyword guide</h3>
+        <ul id="note_list">
+            <li>Keywords/phrases can be up to 50 characters long.</li>
+            <li>You can store up to 20 keywords/phrases.</li>
             <li>They are case-insensitive. <span class='example'>e.g. 'ALTER' is the same as 'alter'.</span></li>
-            <li>Phrases will match with an item description as long as all the words in the phrase appear somewhere in the description. <span class='example'>e.g. The key phrase 'nakano saber figure' will match with '[Nakano] Alter Saber Lily 1/8 Figure'.</span></li>   
-            <li>Word order matters in phrases. <span class='example'>e.g. 'Good Company Smile' is not the same as 'Good 		Smile Company'.</span></li>
+            <li>Phrases will match with an item description as long as all of its words appear in the description (even if its part of another word) and are in the same order as they are in the phrase. <span class='example'>e.g. Key phrase 'nakano alter saber' will match item description '[Nakano] Alter - Saber Lily', but not '[Nakano] Good Smile - Saber Alter'.</span></li>   
+            <li>Enclose a phrase with double quotes for exact matching.<span class="example">e.g. 'Nakano "Saber Alter" ' will match '[Nakano]Good Smile - Saber Alter', but it will not match '[Nakano] Saber Maid Alter'.</span></li> 
     
         </ul>
     </div>
     
     <div id="input">
-    <input id="keyword" type="text" maxlength="50" size="50"/><button id="add_keyword" class="float_right">Add</button>
+
+    <input id="keyword" type="text" maxlength="50" size="50"/><button id="add_keyword" >Add</button>
     </div>
     
     <div>
-        <h2>KEYWORDS<span id="track_limit"></span></h2>
+        <h2 title="Keywords and phrases to search for">Keywords<span id="track_limit"></span></h2>
+         <button id="save_list" class="float_right">Save</button><button id="clear_list" class="float_right">Clear</button><button id="reset" class="float_right">Reset</button>
         <ul id="tracking"></ul>
-    
-    <button id="save_list" class="float_right">Save</button>
-    <br>
-    <button id="clear_list" class="float_right">Clear</button>
-    <br>
-    <button id="reset" class="float_right">Reset</button>
     </div>
 </div>
 </body>

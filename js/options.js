@@ -38,6 +38,8 @@ var options = {
 			$('#apply_limit').click(options.changeSearchLimit);
 			$('#apply_url').click(options.changeUrl);
 			$('#reset').click(options.resetAll);
+		
+			
 			// Attach event to dynamically generated html
 			$(document).on('click','.remove',function(){
 				if(options.removeItem($(this).attr('data-index')))
@@ -149,7 +151,7 @@ var options = {
 		if(newInterval>=5 && newInterval<=60) 
 		{
 			chrome.extension.sendRequest({action: 'change_interval', interval: newInterval*60000});
-			alert('Interval changed to ' + newInterval + ' minutes.');
+			//alert('Interval changed to ' + newInterval + ' minutes.');
 		}
 		else
 			console.log('Interval is invalid or same as current. No changes made.');
@@ -160,11 +162,11 @@ var options = {
 		if(searchLimit > 0 && searchLimit <= 10){
 			console.log('Change search page limit: ' + searchLimit);
 			chrome.extension.sendRequest({action: 'change_limit', limit: searchLimit});
-			alert('Page limit changed to ' + searchLimit);
+			//alert('Page limit changed to ' + searchLimit);
 		}
 		else{
 			console.log('Invalid search page limit.');
-			alert('Error: Invalid search page limit.');
+			//alert('Error: Invalid search page limit.');
 		}
 	},
 	
@@ -228,6 +230,7 @@ var options = {
 			options.changed.searchSource = false;
 			options.changeSearchSource();	
 		}
+		alert('Settings applied.');
 	},
 	
 	saveTrackList: function(){
@@ -271,5 +274,11 @@ var options = {
 }
 
 $(document).ready(function(){
+  	$('#note_list').hide();
+
+	$('h3').click(function(){
+		$(this).toggleClass('close');
+		$('#note_list').slideToggle(350);
+	});
 	options.start();
 });
