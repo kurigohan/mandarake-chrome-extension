@@ -12,6 +12,8 @@
 	.nav {text-decoration: none; color:#999;}
 	.nav:hover {color:#000}
 	#page_nav { font-size:14px; position:fixed; bottom:0; text-align:center; left: 220px}
+	#count{margin-left:10px;font-size:12px; color:#CCC; font-weight:normal;}
+	#notify {float: right; color:#F00; font-size:14px}
   </style>
   <script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>
   <script type="text/javascript" src="js/popup.js"></script>
@@ -20,7 +22,7 @@
 <title>Untitled Document</title>
 </head>
 <body>
-<h4 id="title">Mandrake Tracker</h4>
+<h4 id="title">Mandrake Tracker<span id="count"></span><span id="notify"></span></h4>
 <div id="status"></div>
 <div id="content"><ul id="figure_list"></ul></div>
 <div id="page_nav" >

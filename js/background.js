@@ -8,7 +8,8 @@ var background = {
 		lastNewest: '', // parser.searchForItems() will stop when this is encountered
 		currentNewest: '', // holds the current newest item while last newest item is being searched for
 		lastNewestFound: false,
-		changed: false	
+		count: 0,
+		changed: false
 	},
 	tracking: {
 		list: [],
@@ -47,6 +48,7 @@ var background = {
 			
 		if(typeof data.item_list !== 'undefined'){
 			background.items.list = data.item_list;
+			background.items.count = Object.keys(background.items.list).length;
 			console.log('Item list loaded: ');
 			console.log(background.items.list);
 		}
@@ -111,7 +113,8 @@ var background = {
 		else
 			pageUrl = background.searchPage.source;
 		if(!isNaN(time) && time!=background.interval.time){
-			background.interval.time = time;	
+			background.interval.time = time;
+			console.log('Interval changed: ' + background.interval.time);	
 		}
 
 		if(background.interval.id){
@@ -180,12 +183,16 @@ var background = {
 	
 	searchPageSource: function(page){
 		background.viewMode = parser.getView(page);
-		parser.searchForItems(background.viewMode, this);
+		if(background.viewMode)
+			parser.searchForItems(background.viewMode, background);
+		else
+			console.log('Invalid view mode. Search cancelled.');
 	},
 	
 	removeItem: function(url){
 		delete background.items.list[url];
 		background.items.removed[url] = true;
+		background.items.count--;
 		background.badgeCount--;
 		background.updateBadge();
 		console.log(url + ' removed.');
@@ -203,10 +210,6 @@ var background = {
 	
 	changeTracking: function(newTracking){
 		background.tracking.list = newTracking.list;
-		/*if(newTracking.added) {
-			// force parser.searchForItems() to search all listings since tracking list has new keys
-			background.items.lastNewest = ''; 
-		}*/
 	},
 	
 	save: function(){
@@ -241,6 +244,10 @@ var background = {
 				break;
 			case 'change_interval':
 				console.log('change_interval request received.');
+				if(request.source !== undefined){
+					background.searchPage.source = request.source;
+					console.log('New search page source set: '+background.searchPage.source);
+				}
 				background.setNewInterval(request.interval);
 				break;
 			case 'change_limit':
@@ -248,27 +255,29 @@ var background = {
 				background.searchPage.limit = request.limit;
 				console.log('searchPage.limit = ' + background.searchPage.limit);
 				break;
-			case 'change_source':
-				console.log('change_source request received.');
-				background.searchPage.source = request.source;
-				background.setNewInterval();
-				break;
-			case 'reset':
+			case 'clear':
 				console.log('reset request received.');
-				background.items.list = {};
-				background.items.lastNewest = '';
-				background.items.changed = false;
-				//background.items.removed = {};
-				background.tracking.list = [];
-				background.badgeCount = 0;
-				background.updateBadge();
-				window.clearInterval(background.interval.id);
-				console.log('All variables cleared.'); 
+				background.clear();
 				break;
 			default: 
 				console.log('Error: Invalid request action.');
 				break;
 		}
+	},
+	
+	clear: function(){
+		background.items.list = {};
+		background.items.removed = {};
+		background.items.lastNewest = '';
+		background.items.changed = false;
+		background.tracking.list = [];
+		background.badgeCount = 0;
+		background.updateBadge();
+		background.interval.time = 300000;
+		background.searchPage.limit = 5;
+		background.searchPage.source = 'http://ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html';
+		window.clearInterval(background.interval.id);
+		console.log('All variables cleared.'); 	
 	}
 	
 };

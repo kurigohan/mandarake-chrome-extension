@@ -45,34 +45,42 @@ var parser = {
 		var url;
 		var found = false;
 		view.$items.each(function(){
-			url = $(this).find('a:first').attr('href');
-			details = $(this).find(view.selector).text().trim();
-			//details = details.replace(/\s{2,}/g, ' ');
-			if(url != bg.items.lastNewest){
-				bg.items.lastNewestFound = false;
-				console.log('Checking: ' + details);
-				console.log('Link: ' + url + '\n-------------------');
-				for(var i=0, len=trackingList.length; i<len; ++i)
-				{	
-					if(parser.compare(details, trackingList[i]))
-					{
-						console.log('^^^^MATCH FOUND^^^^');
-						if(!(url in bg.items.list) && !(url in bg.items.removed)){
-							bg.items.list[url] = details;
-							bg.badgeCount++;
-						}
-						else
-							console.log('-- Not added. Already in items.list.');
-						break; //Stop checking for matchs to avoid duplicate items
-					}
+			if(bg.items.count < 50){
+				url = $(this).find('a:first').attr('href');
+				details = $(this).find(view.selector).text().trim();
+				//details = details.replace(/\s{2,}/g, ' ');
+				if(url != bg.items.lastNewest){
+					bg.items.lastNewestFound = false;
+					console.log('Checking: ' + details);
+					console.log('Link: ' + url + '\n-------------------');
+					for(var i=0, len=trackingList.length; i<len; ++i)
+					{	
+						if(parser.compare(details, trackingList[i]))
+						{
+							console.log('^^^^MATCH FOUND^^^^');
+							if(!(bg.items.list[url]!==undefined) && !(bg.items.removed[url]!==undefined)){
+								bg.items.list[url] = details;
+								bg.items.count++;
+								bg.badgeCount++;
+							}
+							else
+								console.log('-- Not added. Already in items.list or items.removed.');
+							break; // stop checking for matchs
+						}// end if compare
+					}// end for loop
+				}// end if url!=lastNewest
+				else{ // newest found
+					console.log('Stop item found. Stopping seach.');
+					bg.items.lastNewestFound = true;
+					console.log('Last newest set to current newest.');
+					bg.items.lastNewest = bg.items.currentNewest;
+					return false; //break out of .each loop 
 				}
-			}
-			else{ // newest found
-				console.log('Stop item found. Stopping seach.');
+			}//end if count <
+			else{
+				console.log('items.list full. Search stopped.');
 				bg.items.lastNewestFound = true;
-				console.log('Last newest set to current newest.');
-				bg.items.lastNewest = bg.items.currentNewest;
-				return false; //break out of .each loop 
+				return false;
 			}
 		}); //end source.find
 		

@@ -7,8 +7,12 @@ var popup = {
 		
 		chrome.runtime.getBackgroundPage(function(page){
 			console.log(page.background.items.list);
+			if(page.background.items.count >= 50){
+				$('#notify').text('Item list is full. Please remove some items.');
+			}
+			$('#count').text(page.background.items.count+'/50');
 			popup.createDisplayPage(page.background.items.list);
-			//popup.displayItems(page.background.items.list);
+
 
 			$('.remove').click(function(){
 				console.log($(this).next().attr('href').slice(37)); 
@@ -56,7 +60,7 @@ var popup = {
 		var arr = [];
 		if(len > 10){
 			var count  = 0;
-			for(key in list)
+			for(var key in list)
 			{
 				arr.push({url:key, details:list[key]});
 				count++;

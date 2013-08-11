@@ -10,7 +10,7 @@ var options = {
 	changed: {
 		checkinterval: false,
 		searchLimit: false, 
-		searchSource: false,
+		searchCategory: false,
 		trackList: false,
 	},
 	start: function(){
@@ -28,7 +28,7 @@ var options = {
 			});
 			$('#category').change(function(){
 				console.log('Search source changed');
-				options.changed.searchSource = true;
+				options.changed.searchCategory = true;
 			});
 			$('#apply_settings').click(options.applySettings);
 			$('#add_keyword').click(options.addItem);
@@ -170,44 +170,52 @@ var options = {
 		}
 	},
 	
-	changeSearchSource: function(){
-		var category = $('#category').find(':selected').val();
-		console.log(category);
-		var newSource;
-		if(category == 'all')
-			newSource = 'http://ekizo.mandarake.co.jp/shop/en/search.do?action=whatsNew&doujin=all&displayDate=0';
-		else if(category == 'doll')
-			newSource = 'http://ekizo.mandarake.co.jp/shop/en/category-doll.html';
-		else if(category == 'bishoujo')
-			newSource = 'http://ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html';
-		else if(category == 'model')
-			newSource = 'http://ekizo.mandarake.co.jp/shop/en/category-model-kit.html';
-		else if(category == 'action')
-			newSource = 'http://ekizo.mandarake.co.jp/shop/en/category-action-figure.html';
-		else if(category == 'gokin')
-			newSource = 'http://ekizo.mandarake.co.jp/shop/en/category-gokin.html';
-		else
-			console.log('Invalid category.');
-		if(newSource){
-			console.log('Change url: ' + newSource)
-			chrome.extension.sendRequest({action:'change_source', source:newSource});
-			chrome.storage.local.set({'category':category}, function(){console.log('category saved.')});
+	changeIntervalId: function(){
+		var request = {action:'change_interval'};
+		var interval;
+		var source;
+		if(options.changed.checkinterval){
+			interval = parseInt($('#interval').find(':selected').text(), 10);
+			if(interval>=5 && interval<=60)
+				request['interval'] = interval*60000;
 		}
+		if(options.changed.searchCategory){
+			source = options.getCategoryUrl();
+			if(source)
+				request['source'] = source;
+		}
+		console.log('Change interval/source:')
+		console.log(request);
+		if(request.interval !== undefined || request.source !== undefined)
+			chrome.extension.sendRequest(request);
+		else
+			console.log('Invalid interval/source.');
 	},
 	
-	changeUrl: function(){
-		var pattern = new RegExp( '^ekizo.mandarake.co.jp/shop/en/')
-		var newUrl = $('#url').val();
-		console.log(newUrl);
-		if(pattern.test(newUrl)){
-			newUrl = 'http://' + newUrl;
-			console.log('Change url: ' + newUrl)
-			chrome.extension.sendRequest({action: 'change_url', url: newUrl});
-		}
+	getCategoryUrl: function(){
+		var category = $('#category').find(':selected').val();
+		console.log(category);
+		chrome.storage.local.set({'category':category}, function(){console.log('Category saved.')});
+		var url = false;
+		if(category == 'all')
+			url = 'http://ekizo.mandarake.co.jp/shop/en/search.do?action=whatsNew&doujin=all&displayDate=0';
+		else if(category == 'doll')
+			url = 'http://ekizo.mandarake.co.jp/shop/en/category-doll.html';
+		else if(category == 'bishoujo')
+			url = 'http://ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html';
+		else if(category == 'model')
+			url = 'http://ekizo.mandarake.co.jp/shop/en/category-model-kit.html';
+		else if(category == 'action')
+			url = 'http://ekizo.mandarake.co.jp/shop/en/category-action-figure.html';
+		else if(category == 'gokin')
+			url = 'http://ekizo.mandarake.co.jp/shop/en/category-gokin.html';
 		else
-			alert('Invalid url.');
+			console.log('Invalid category.');
 
+		return url;
 	},
+	
+
 	
 	clearList: function(){
 		options.tracking.list = [];
@@ -218,17 +226,14 @@ var options = {
 	},
 	
 	applySettings: function(){
-		if(options.changed.checkinterval){
+		if(options.changed.checkinterval || options.changed.searchCategory){
+			options.changeIntervalId();
 			options.changed.checkinterval = false;
-			options.changeInterval();
+			options.changed.searchCategory = false;
 		}
 		else if(options.changed.searchLimit){
-			options.changed.searchLimit = false;
 			options.changeSearchLimit();	
-		}
-		else if(options.changed.searchSource){
-			options.changed.searchSource = false;
-			options.changeSearchSource();	
+			options.changed.searchLimit = false;
 		}
 		alert('Settings applied.');
 	},
@@ -260,13 +265,11 @@ var options = {
 	},
 	
 	resetAll: function(){
-		if(confirm('Reset storage and settings?\n(The extension must be reloaded after.)'))
+		if(confirm('Clear storage and settings?\n(The extension must be reloaded after.)'))
 		{
-			console.log('RESET');
-
 			chrome.storage.local.clear(function(){
 				console.log('Storage cleared.');
-				chrome.extension.sendRequest({action:'reset'});
+				chrome.extension.sendRequest({action:'clear'});
 			});
 		}
 	

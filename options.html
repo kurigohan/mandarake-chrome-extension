@@ -5,26 +5,26 @@
 <style type="text/css">
 	*{ font-family: Helvetica, Arial, sans-serif;}
 	html{height:100%}
-	body{ height: 100%; width: 800px; margin:auto; font-size:16px; background-color: #1c294d;}
-	.wrapper{ background-color:#FFF; border-width: 0px 6px;border-style: solid;border-color: #b23535; height: 100%;	
+	body{ height: 100%; width: 800px; margin:auto; font-size:16px;background-color: #1c294d;color:#3f465c}
+	.wrapper{ background-color:#f5f0e0; border-width: 0px 6px;border-style: solid;border-color: #b23535; height: 100%;	
 	box-shadow: 0 0 15px #000;}
 	div{padding: 6px;}
 	h3{margin:0px;background: url(img/open.png) no-repeat 0 11px;padding: 10px 0 0 25px;cursor: pointer;}
 	h3.close {background-image: url(img/close.png);}
 	h2{display:inline}
-	button{ font-size: 14px;  width:6em }
+	button{ font-size: 14px; color:#FFF; width:6em; background:#b23535}
 	.float_right{float: right; margin-left:5px}
 	.example {font-size: 12px; color:#999}
 	.remove{float:right; text-decoration:none;color:#cd0000; }
 	#add_keyword{margin-left: 10px}
-	#options{border: 1px solid #CCC;}
-	#tracking{margin-top:5px; overflow:scroll;}
+	#options{border: 1px solid #b23535;}
+	#tracking{margin-top:5px; overflow:auto;}
 	#tracking li{height:1.25em}
 	#tracking li:hover{font-weight:bold; background-color:#e5e5e5;}
-	#note{font-size: 14px; border: 1px solid #CCC;}
+	#note{font-size: 14px; border: 1px solid #b23535;}
 	#track_limit{margin-left: 10px; font-size: 14px; color:#CCC}
 	#input{margin-top: 10px}
-	#http{font-size: 12px; color:#999}
+	input:focus{outline:none; box-shadow:0 0 2px #b23535}
 </style>
 <script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>
 <script type="text/javascript" src="js/options.js"></script>
@@ -33,7 +33,7 @@
 
 <body>
 <div class="wrapper">
-    <h1> MANDRAKE TRACKER OPTIONS</h1>
+    <h1> MANDRAKE TRACKER</h1>
     <div id="options">
         <label title="Time interval between searches">Search interval: </label>
         <select id="interval">
