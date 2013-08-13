@@ -31,7 +31,7 @@ var parser = {
 		}
 	},
 	
-	searchForItems: function(view, bg){ //seletor, pageIndex){
+	searchForItems: function(view, bg, trackingList){ //seletor, pageIndex){
 		console.log('Tracking list:');
 		console.log(bg.tracking.list);
 		var trackingList = parser.convertToRegex(bg.tracking.list);
@@ -46,7 +46,7 @@ var parser = {
 		var stock;
 		var found = false;
 		view.$items.each(function(){
-			if(bg.items.count < 50){
+			if(bg.items.listCount < 50){
 				url = $(this).find('a:first').attr('href');
 				details = $(this).find(view.detailSelector).text().trim();
 				stock = $(this).find(view.stockSelector).text().trim().toLowerCase();
@@ -67,7 +67,7 @@ var parser = {
 								console.log('^^^^MATCH FOUND^^^^');
 								if(!(bg.items.list[url]!==undefined) && !(bg.items.removed[url]!==undefined)){
 									bg.items.list[url] = details;
-									bg.items.count++;
+									bg.items.listCount++;
 									bg.badgeCount++;
 								}
 								else
@@ -97,8 +97,7 @@ var parser = {
 		console.log(bg.items.list);
 		console.log('Item count: ' + Object.keys(bg.items.list).length + '\n********************');
 		bg.updateBadge();
-		bg.save();
-		
+	//	bg.save();	
 	},
 	
 	compare: function(details, key){

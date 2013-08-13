@@ -8,7 +8,8 @@ var background = {
 		lastNewest: '', // parser.searchForItems() will stop when this is encountered
 		currentNewest: '', // holds the current newest item while last newest item is being searched for
 		lastNewestFound: false,
-		count: 0,
+		listCount: 0,
+		removeCount: 0,
 		changed: false
 	},
 	tracking: {
@@ -28,6 +29,7 @@ var background = {
 	
 	start: function(){
 		//load settings and begin program
+		chrome.storage.local.getBytesInUse(null,function(bytesInUse) {console.log('Current Storage size: '+bytesInUse)});
 		chrome.storage.local.get(['track_list', 'item_list',  'removed_list', 'last_newest', 
 									'search_source', 'search_limit','badge_count', 'interval'], 
 			function(data){
@@ -48,31 +50,33 @@ var background = {
 			
 		if(typeof data.item_list !== 'undefined'){
 			background.items.list = data.item_list;
-			background.items.count = Object.keys(background.items.list).length;
+			background.items.listCount = Object.keys(background.items.list).length;
 			console.log('Item list loaded: ');
 			console.log(background.items.list);
+			console.log('Length: ' + background.items.listCount);
 		}
 		else
 			console.log('No item_list found in storage.');
 		
 		if(typeof data.removed_list !== 'undefined'){
 			background.items.removed = data.removed_list;
+			background.items.removeCount = Object.keys(background.items.removed).length;
 			console.log('Removed list loaded: ');
 			console.log(background.items.removed);
+			console.log('Length: ' + background.items.removeCount);
 		}
 		else
 			console.log('No removed_list found in storage.');
 		
-		if(typeof data.last_newest !== 'undefined'){
+		if(data.last_newest !== undefined){
 			background.items.lastNewest = data.last_newest;
-			console.log('Last newest item loaded: ');
-			console.log(background.items.lastNewest);
+			console.log('Last newest item loaded: '+background.items.lastNewest);
 		}
 		else
 			console.log('No last_newest found in storage.');
 			
 			
-		if(typeof data.search_source !== 'undefined')
+		if(data.search_source !== undefined)
 		{
 			background.searchPage.source = data.search_source;
 			console.log('Search page source loaded: ' + background.searchPage.source);
@@ -80,7 +84,7 @@ var background = {
 		else
 			console.log('No search_source found in storage.');
 			
-		if(typeof data.search_limit !== 'undefined')
+		if(data.search_limit !== undefined)
 		{
 			background.searchPage.limit = data.search_limit;
 			console.log('Search page limit loaded: ' + background.searchPage.limit);
@@ -88,7 +92,7 @@ var background = {
 		else
 			console.log('No search_limit found in storage.');
 			
-		if(typeof data.badge_count !== 'undefined')
+		if(data.badge_count !== undefined)
 		{
 			background.badgeCount = data.badge_count;
 			console.log('Badge count loaded: ' + background.badgeCount);
@@ -127,9 +131,11 @@ var background = {
 		else
 			console.log('A request is already in progress. A new one cannot be sent.');
 			
-		background.interval.id = window.setInterval(function(){background.checkPage(pageUrl)}
-																, background.interval.time);
-		console.log('interval.id set.');
+		background.interval.id = window.setInterval(function(){
+				console.log('interval.id set.');
+				background.checkPage(pageUrl);}
+				, background.interval.time);
+
 		return true;
 	},
 	
@@ -190,12 +196,18 @@ var background = {
 	
 	removeItem: function(url){
 		delete background.items.list[url];
-		background.items.removed[url] = true;
-		background.items.count--;
+		background.items.removed[url] = '';
+		background.items.removeCount++;
+		background.items.listCount--;
 		background.badgeCount--;
 		background.updateBadge();
 		console.log(url + ' removed.');
 		console.log(background.items.list);
+		if(background.items.removeCount >= 300){
+			background.items.removed = {};
+			background.items.removeCount = 0;
+			console.log('Removed list limit reach. Cleared.');
+		}
 	},
 	
 	updateBadge: function(){
@@ -277,6 +289,7 @@ var background = {
 		background.searchPage.source = 'http://ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html';
 		window.clearInterval(background.interval.id);
 		console.log('All variables cleared.'); 	
+		chrome.storage.local.getBytesInUse(null, function(bytesInUse){console.log('Current storage size: '+bytesInUse)});
 	}
 	
 };

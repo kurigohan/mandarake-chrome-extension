@@ -268,6 +268,7 @@ var options = {
 	resetAll: function(){
 		if(confirm('Clear storage and settings?\n(The extension must be reloaded after.)'))
 		{
+
 			chrome.storage.local.clear(function(){
 				console.log('Storage cleared.');
 				chrome.extension.sendRequest({action:'clear'});
