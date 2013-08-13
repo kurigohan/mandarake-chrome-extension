@@ -142,7 +142,6 @@ var background = {
 			if (xhr.readyState == 4) {
 				callback(xhr.responseText);
 				background.requesting = false;
-				
 				if(background.items.lastNewestFound == false){
 					var nextUrl = background.getPageUrl(background.searchPage.index);
 					console.log(nextUrl);

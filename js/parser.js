@@ -11,17 +11,17 @@ var parser = {
 		$itemlist = $(doc).find('#itemlist');
 		if($itemlist.find('h5:first').length){
 			console.log('View Mode: Thumbnail');
-			return {view:'thumbnail', $items:$itemlist.find('td[style]'), selector:'h5'};
+			return {view:'thumbnail', $items:$itemlist.find('td[style]'), detailSelector:'h5', stockSelector:'a.buy'};
 			//parser.searchForItems($itemlist.find('td[style]'), 'h5');
 		}
 		else if($itemlist.find('h1:first').length){
 			console.log('View Mode: with image');
-			return {view:'image', $items:$itemlist.find('table[style]'), selector:'h1'};
+			return {view:'image', $items:$itemlist.find('table[style]'), detailSelector:'h1', stockSelector:'a[style]:eq(2)'};
 			//parser.searchForItems($itemlist.find('table[style]'), 'h1');
 		}
 		else if($itemlist.find('.list_text:first').length){
 			console.log('View Mode: without image');
-			return {view:'no_image', $items:$itemlist.find('tr'), selector:'.list_text'};
+			return {view:'no_image', $items:$itemlist.find('tr'), detailSelector:'.list_text', stockSelector:'a b'};
 			//parser.searchForItems($itemlist.find('tr'), '.list_text');
 		}
 		else
@@ -43,31 +43,40 @@ var parser = {
 		console.log('Parsing document...\n********************\n---START SEARCH---');
 		var details;
 		var url;
+		var stock;
 		var found = false;
 		view.$items.each(function(){
 			if(bg.items.count < 50){
 				url = $(this).find('a:first').attr('href');
-				details = $(this).find(view.selector).text().trim();
-				//details = details.replace(/\s{2,}/g, ' ');
+				details = $(this).find(view.detailSelector).text().trim();
+				stock = $(this).find(view.stockSelector).text().trim().toLowerCase();
+				if(!stock)
+					stock = 'sold';
 				if(url != bg.items.lastNewest){
 					bg.items.lastNewestFound = false;
 					console.log('Checking: ' + details);
-					console.log('Link: ' + url + '\n-------------------');
-					for(var i=0, len=trackingList.length; i<len; ++i)
-					{	
-						if(parser.compare(details, trackingList[i]))
-						{
-							console.log('^^^^MATCH FOUND^^^^');
-							if(!(bg.items.list[url]!==undefined) && !(bg.items.removed[url]!==undefined)){
-								bg.items.list[url] = details;
-								bg.items.count++;
-								bg.badgeCount++;
-							}
-							else
-								console.log('-- Not added. Already in items.list or items.removed.');
-							break; // stop checking for matchs
-						}// end if compare
-					}// end for loop
+					console.log('Stock: ' + stock);
+					console.log('Link: ' + url);
+					if(stock == 'sold')
+						console.log('** Sold out. Skipped.');
+					else{
+						for(var i=0, len=trackingList.length; i<len; ++i)
+						{	
+							if(parser.compare(details, trackingList[i]))
+							{
+								console.log('^^^^MATCH FOUND^^^^');
+								if(!(bg.items.list[url]!==undefined) && !(bg.items.removed[url]!==undefined)){
+									bg.items.list[url] = details;
+									bg.items.count++;
+									bg.badgeCount++;
+								}
+								else
+									console.log('** Not added. Already in items.list or items.removed.');
+								break; // stop checking for matchs
+							}// end if compare
+						}// end for loop
+					}
+					console.log('-------------------');
 				}// end if url!=lastNewest
 				else{ // newest found
 					console.log('Stop item found. Stopping seach.');

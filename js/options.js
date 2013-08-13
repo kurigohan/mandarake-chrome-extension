@@ -226,15 +226,16 @@ var options = {
 	},
 	
 	applySettings: function(){
+		if(options.changed.searchLimit){
+			options.changeSearchLimit();	
+			options.changed.searchLimit = false;
+		}
 		if(options.changed.checkinterval || options.changed.searchCategory){
 			options.changeIntervalId();
 			options.changed.checkinterval = false;
 			options.changed.searchCategory = false;
 		}
-		else if(options.changed.searchLimit){
-			options.changeSearchLimit();	
-			options.changed.searchLimit = false;
-		}
+
 		alert('Settings applied.');
 	},
 	
