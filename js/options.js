@@ -45,7 +45,7 @@ var options = {
 				if(options.removeItem($(this).attr('data-index')))
 				{
 					$(this).closest('li').remove();
-					$('#limit').text(options.listCount + '/20');
+					$('#limit').text(options.listCount + '/30');
 				}
 				else
 					alert('Could not remove item.');
@@ -107,22 +107,28 @@ var options = {
 	},
 	
 	addItem: function(){
-		if(options.listCount < 20){
+		if(options.listCount < 30){
 			var newKey = $('#keyword').val();
-			if(options.tracking.list.indexOf(newKey) == -1){
-				options.tracking.list.push(newKey);
-				options.appendElement(options.tracking.list.length-1);
-				options.changed.trackList = true;
-				console.log('Added: ' + newKey);
-				console.log(options.tracking.list);
-				options.listCount++;
-				options.updateTrackLimit();
+			$('#keyword').val('');
+			if(newKey.replace(/ /g,'').length > 3)
+			{
+				if(options.tracking.list.indexOf(newKey) == -1){
+					options.tracking.list.push(newKey);
+					options.appendElement(options.tracking.list.length-1);
+					options.changed.trackList = true;
+					console.log('Added: ' + newKey);
+					console.log(options.tracking.list);
+					options.listCount++;
+					options.updateTrackLimit();
+				}
+				else
+				{
+					console.log('Keyword not added. Already exists.');
+					alert('Keyword already exists.');
+				}
 			}
 			else
-			{
-				console.log('Keyword not added. Already exists.');
-				alert('Keyword already exists.');
-			}
+				alert('Keywords must be at least 3 characters long.');
 		}
 		else
 		{
@@ -262,7 +268,7 @@ var options = {
 	},
 	
 	updateTrackLimit: function(){
-		$('#track_limit').text(options.listCount + '/20');
+		$('#track_limit').text(options.listCount + '/30');
 	},
 	
 	resetAll: function(){

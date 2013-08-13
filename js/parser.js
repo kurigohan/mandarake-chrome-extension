@@ -31,7 +31,7 @@ var parser = {
 		}
 	},
 	
-	searchForItems: function(view, bg, trackingList){ //seletor, pageIndex){
+	searchForItems: function(view, bg){ //seletor, pageIndex){
 		console.log('Tracking list:');
 		console.log(bg.tracking.list);
 		var trackingList = parser.convertToRegex(bg.tracking.list);
@@ -108,7 +108,7 @@ var parser = {
 		var newList = [];
 		for(var i=0, len=list.length; i<len; ++i)
 		{
-			newList.push(list[i].match(/\w+|"[^"]+"/g)
+			newList.push(list[i].match(/[^"\s]+|"[^"]+"/g)
 						.join('(.|\\n)*')
 						.replace(/"/g, '')
 						.toLowerCase()
