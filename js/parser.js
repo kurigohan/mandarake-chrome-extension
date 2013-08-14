@@ -119,7 +119,8 @@ var parser = {
 	
 	compare: function(details, key){
 		for(var i=0; i<key.length;++i){
-			if(details.toLowerCase().match(key[i]) == null)
+			if(details.toLowerCase().indexOf(key[i]) == -1)
+			//if(details.toLowerCase().match(key[i]) == null)
 				return false;
 		}
 		return true;
