@@ -3,10 +3,10 @@
 var options = {
 	tracking: {
 		list: [],
+		count: 0
 		//added: false // set to true when a new item is added to the list
 					 // tells options.saveTrackList to reset background.items.lastNewest 
 	},
-	listCount: 0,
 	changed: {
 		checkinterval: false,
 		searchLimit: false, 
@@ -45,7 +45,7 @@ var options = {
 				if(options.removeItem($(this).attr('data-index')))
 				{
 					$(this).closest('li').remove();
-					$('#limit').text(options.listCount + '/30');
+					$('#limit').text(options.tracking.count + '/30');
 				}
 				else
 					alert('Could not remove item.');
@@ -58,7 +58,7 @@ var options = {
 		if(typeof data.track_list !== 'undefined')
 		{
 			options.tracking.list = data.track_list;
-			options.listCount = options.tracking.list.length;
+			options.tracking.count = options.tracking.list.length;
 			console.log('tracking_list loaded.');
 			console.log(options.tracking.list);
 		}
@@ -97,7 +97,7 @@ var options = {
 			console.log('Removed at ' + index);
 			console.log(options.tracking.list);
 			options.changed.trackList = true;
-			options.listCount--;
+			options.tracking.count--;
 			options.updateTrackLimit();
 			return true;
 		}
@@ -107,28 +107,30 @@ var options = {
 	},
 	
 	addItem: function(){
-		if(options.listCount < 30){
-			var newKey = $('#keyword').val();
-			$('#keyword').val('');
-			if(newKey.replace(/ /g,'').length > 3)
-			{
-				if(options.tracking.list.indexOf(newKey) == -1){
-					options.tracking.list.push(newKey);
-					options.appendElement(options.tracking.list.length-1);
-					options.changed.trackList = true;
-					console.log('Added: ' + newKey);
-					console.log(options.tracking.list);
-					options.listCount++;
-					options.updateTrackLimit();
+		if(options.tracking.count < 30){
+			var newKey = $('#keyword').val().trim();
+				
+				if(newKey.replace(/ /g,'').length >= 3 && newKey.length <= 60)
+				{
+					$('#keyword').val('');
+					if(options.tracking.list.indexOf(newKey) == -1){
+						options.tracking.list.push(newKey);
+						options.appendElement(options.tracking.list.length-1);
+						options.changed.trackList = true;
+						console.log('Added: ' + newKey);
+						console.log(options.tracking.list);
+						options.tracking.count++;
+						options.updateTrackLimit();
+					}
+					else
+					{
+						console.log('Keyword not added. Already exists.');
+						alert('Keyword already exists.');
+					}
 				}
 				else
-				{
-					console.log('Keyword not added. Already exists.');
-					alert('Keyword already exists.');
-				}
-			}
-			else
-				alert('Keywords must be at least 3 characters long.');
+					alert('Keywords must be at least 3 characters long not including spaces.');
+
 		}
 		else
 		{
@@ -225,7 +227,7 @@ var options = {
 	
 	clearList: function(){
 		options.tracking.list = [];
-		options.listCount = 0;
+		options.tracking.count = 0;
 		$('#tracking').html('');
 		options.changed.trackList = true;
 		options.updateTrackLimit();
@@ -268,7 +270,7 @@ var options = {
 	},
 	
 	updateTrackLimit: function(){
-		$('#track_limit').text(options.listCount + '/30');
+		$('#track_limit').text(options.tracking.count + '/30');
 	},
 	
 	resetAll: function(){
@@ -277,8 +279,14 @@ var options = {
 
 			chrome.storage.local.clear(function(){
 				console.log('Storage cleared.');
+				options.clearList();
+				$('#interval').val(15 + ' minutes');
+				$('#category').val('bishoujo');
+				$('#search_limit').val('5');
+
 				chrome.extension.sendRequest({action:'clear'});
 			});
+
 		}
 	
 	}

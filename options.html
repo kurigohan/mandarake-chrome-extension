@@ -9,9 +9,9 @@
 	.wrapper{ background-color:#f5f0e0; border-width: 0px 6px;border-style: solid;border-color: #b23535; height: 100%;	
 	box-shadow: 0 0 15px #000;}
 	div{padding: 6px;}
-	h3{margin:0px;background: url(img/open.png) no-repeat 0 11px;padding: 10px 0 0 25px;cursor: pointer;}
+	h3{margin:0px;background: url(img/open.png) no-repeat 0 11px; padding: 10px 0 0 25px;cursor: pointer;}
 	h3.close {background-image: url(img/close.png);}
-	h2{display:inline}
+	h2{display:inline;}
 	button{ font-size: 14px; color:#FFF; width:6em; background:#b23535}
 	.float_right{float: right; margin-left:5px}
 	.example {font-size: 12px; color:#999}
@@ -39,7 +39,7 @@
         <select id="interval">
             <option>5 minutes</option>
             <option>10 minutes</option>
-            <option>15 minutes</option>
+            <option selected>15 minutes</option>
             <option>30 minutes</option>
             <option>45 minutes</option>
             <option>60 minutes</option>
@@ -63,18 +63,18 @@
     <div id="note">
     <h3>Keyword guide</h3>
         <ul id="note_list">
-            <li>Keywords/phrases must be between 3 - 50 characters.</li>
+            <li>Keywords/phrases must be between 3 - 60 characters.</li>
             <li>You can store up to 30 keywords/phrases.</li>
-            <li>They are case-insensitive. <span class='example'>e.g. 'ALTER' is the same as 'alter'.</span></li>
-            <li>Phrases will match with an item description as long as all of its words appear in the description (even if its part of another word) and are in the same order as they are in the phrase. <span class='example'>e.g. Key phrase 'nakano alter saber' will match item description '[Nakano] Alter - Saber Lily', but not '[Nakano] Good Smile - Saber Alter'.</span></li>   
-            <li>Enclose a phrase with double quotes for exact matching.<span class="example">e.g. 'Nakano "Saber Alter" ' will match '[Nakano]Good Smile - Saber Alter', but it will not match '[Nakano] Saber Maid Alter'.</span></li> 
+            <li>They are case-insensitive. <span class='example'>e.g. <i><b>ALTER</b></i> is the same as <i><b>alter</b></i>.</span></li>
+            <li>Phrases will match with an item description as long as all of its words appear in the description. <span class='example'>e.g. Key phrase <i><b>nakano alter saber</b></i> will match item description <i><b>[Nakano] Alter - Saber Lily</b></i>, but not <i><b>[Nakano] Good Smile - Saber</b></i>.</span></li>   
+            <li>Enclose a phrase with double or single quotes for exact matching. <span class="example">e.g. <i><b>Nakano "Saber Alter"</b></i> will match <i><b>[Nakano]Good Smile - Saber Alter</b></i>, but it will not match <i><b>[Nakano] Saber Maid Alter</b></i>.</span></li> 
     
         </ul>
     </div>
     
     <div id="input">
 
-    <input id="keyword" type="text" maxlength="50" size="50"/><button id="add_keyword" >Add</button>
+    <input id="keyword" type="text" maxlength="60" size="55"/><button id="add_keyword" >Add</button>
     </div>
     
     <div>

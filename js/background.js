@@ -16,7 +16,7 @@ var background = {
 		list: [],
 	}, 
 	interval: { 
-		time: 300000, // default interval (5 minutes)
+		time: 900000, // default interval (15 minutes)
 		id: null
 	},  
 	searchPage: {
@@ -143,11 +143,12 @@ var background = {
 		console.log('Fetching document: ' + url);
 		var xhr = new XMLHttpRequest();
 		background.requesting = true;
+		console.log('REQUEST STARTED');
 		xhr.open("GET", url, true);
 		xhr.onreadystatechange = function() {
 			if (xhr.readyState == 4) {
 				callback(xhr.responseText);
-				background.requesting = false;
+
 				if(background.items.lastNewestFound == false){
 					var nextUrl = background.getPageUrl(background.searchPage.index);
 					console.log(nextUrl);
@@ -164,6 +165,8 @@ var background = {
 						console.log(background.items.lastNewest);
 					}
 				}
+				background.requesting = false;
+				console.log('REQUEST ENDED.');
 			}
 		};
 		xhr.send();
@@ -284,7 +287,7 @@ var background = {
 		background.tracking.list = [];
 		background.badgeCount = 0;
 		background.updateBadge();
-		background.interval.time = 300000;
+		background.interval.time = 900000;
 		background.searchPage.limit = 5;
 		background.searchPage.source = 'http://ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html';
 		window.clearInterval(background.interval.id);

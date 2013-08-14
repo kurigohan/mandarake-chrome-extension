@@ -34,7 +34,8 @@ var parser = {
 	searchForItems: function(view, bg){ //seletor, pageIndex){
 		console.log('Tracking list:');
 		console.log(bg.tracking.list);
-		var trackingList = parser.convertToRegex(bg.tracking.list);
+		//var trackingList = parser.convertToRegex(bg.tracking.list);
+		var trackingList = parser.splitTrackKeys(bg.tracking.list);
 		if(bg.searchPage.index == 0){
 			bg.items.currentNewest = view.$items.first().find('a:first').attr('href');
 			console.log('Current newest: ' + bg.items.currentNewest);
@@ -49,6 +50,7 @@ var parser = {
 			if(bg.items.listCount < 50){
 				url = $(this).find('a:first').attr('href');
 				details = $(this).find(view.detailSelector).text().trim();
+				details = details.replace(/\n/, '');
 				stock = $(this).find(view.stockSelector).text().trim().toLowerCase();
 				if(!stock)
 					stock = 'sold';
@@ -100,14 +102,46 @@ var parser = {
 	//	bg.save();	
 	},
 	
+	splitTrackKeys: function(list){
+		var newKey;
+		var newList = [];
+		for(var i=0, len=list.length; i<len; ++i)
+		{
+			newKey = list[i].toLowerCase().match(/[^"'\s]+|"[^"]+"|'[^']+'/g);
+			for(var j=0; j<newKey.length;++j)
+				newKey[j] = newKey[j].replace(/"|'/g, '');
+			newList.push(newKey);
+		}
+		console.log('Tracking list split: ');
+		console.log(newList);
+		return newList;
+	},
+	
 	compare: function(details, key){
+		for(var i=0; i<key.length;++i){
+			if(details.toLowerCase().match(key[i]) == null)
+				return false;
+		}
+		return true;
+	},
+	
+	compare2: function(details, key){
 		var pattern = new RegExp(key);
 		return pattern.test(details.toLowerCase());
 	},
 	convertToRegex: function(list){
 		var newList = [];
+		var newKey;
 		for(var i=0, len=list.length; i<len; ++i)
 		{
+			
+			/*newKey = list[i].match(/[^"'\s]+|"[^"]+"|'[^']+'/g);
+			console.log(newKey);
+			for (var j=0; j< newKey.length;++j)
+			{
+				newKey[j] = '(?=(.|\\s)*' + newKey[j] + '(.|\\s)*)';
+			}
+			newList.push(newKey.join('').replace(/"|'/g,'').toLowerCase()+'.+');*/
 			newList.push(list[i].match(/[^"\s]+|"[^"]+"/g)
 						.join('(.|\\n)*')
 						.replace(/"/g, '')
