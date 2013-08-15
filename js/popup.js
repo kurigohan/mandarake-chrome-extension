@@ -3,23 +3,27 @@
 var popup = {
 	pages: [],
 	pageIndex: 0,
+	itemCount: 0,
 	start: function(){
 		
 		chrome.runtime.getBackgroundPage(function(page){
 			console.log(page.background.items.list);
-			if(page.background.items.listCount >= 50){
+			popup.itemCount = page.background.items.listCount;
+			if(popup.itemCount >= 50){
 				$('#notify').text('Item list is full. Please remove some items.');
 			}
-			$('#count').text(page.background.items.listCount +'/50');
+			popup.updateCount();
 			popup.createDisplayPage(page.background.items.list);
 
-
-			$('.remove').click(function(){
+			
+			// Attach event to dynamically generated html
+			$(document).on('click','.remove',function(){
 				console.log($(this).next().attr('href').slice(37)); 
-				var itemPage = $(this).next().attr('href').slice(37); //get item url and remove host
+				var itemUrl = $(this).next().attr('href').slice(37); //get item url and remove host
 				$(this).closest('li').remove();
-				popup.removeItem(itemPage);
-			});	
+				popup.removeItem(itemUrl);
+
+			}); //end .on
 		});
 	},
 	
@@ -28,13 +32,11 @@ var popup = {
 		if(list instanceof Array){
 			for(var i=0, len=list.length;i<len;++i){
 				display += popup.constructTag(list[i].url, list[i].details);
-				//$("#figure_list").append(popup.constructTag(list[i].url, list[i].details));	
 			}
 		}
 		else if(typeof list === 'object'){
 			for(var key in list){
 				display += popup.constructTag(key, list[key]);
-				//$("#figure_list").append(popup.constructTag(key, list[key]));		
 			}
 		}
 		$("#figure_list").html(display);
@@ -42,16 +44,51 @@ var popup = {
 	},
 	
 	constructTag: function(url, details){
-		var tag = '<li></a><a href="" class="remove">x</a><a href=http://ekizo.mandarake.co.jp/shop/en/' +
+		var tag = '<li><a href="#" class="remove">x</a><a href=http://ekizo.mandarake.co.jp/shop/en/' +
 					url + ' target="_blank" class="item">' +
-					details + '</li>';
+					details + '</a></li>';
 		return tag;
 		
 	},
 
-	removeItem: function(itemPage){
-		
-		chrome.extension.sendRequest({action: 'remove_item', url: itemPage});
+	removeItem: function(itemUrl){
+		var itemIndex = popup.findUrlIndex(itemUrl);
+		if(itemIndex > -1){
+			popup.pages[popup.pageIndex].splice(itemIndex, 1);
+			popup.itemCount--;
+			chrome.extension.sendRequest({action: 'remove_item', url: itemUrl});
+			popup.getNextPageItem();
+			popup.updateCount();
+		}
+
+	},
+	
+	findUrlIndex: function(itemUrl){
+		for(var i=0; i<popup.pages[popup.pageIndex].length;++i){
+			if(popup.pages[popup.pageIndex][i].url == itemUrl)
+				return i;	
+		}
+		console.log('Item url not found');	
+		return -1;
+	},
+	
+	getNextPageItem: function(){
+		var pagesLeft = popup.pages.length-(popup.pageIndex+1);
+		if( pagesLeft >= 1){
+			console.log('pages left: '+pagesLeft);
+			var nextItem;
+			for(var i=popup.pages.length-1; i>popup.pageIndex;--i){
+				nextItem = popup.pages[i].shift();
+				popup.pages[i-1].push(nextItem);
+				if(popup.pages[i].length == 0)
+				{
+					popup.pages.splice(i, 1);	
+					$('#page').text(popup.pageIndex+1 + '/' + popup.pages.length);
+				}
+			}
+			console.log(nextItem);
+			$('#figure_list').append(popup.constructTag(nextItem.url, nextItem.details));
+		}
 	},
 	
 	createDisplayPage: function(list){
@@ -98,6 +135,10 @@ var popup = {
 		$('#page').text(popup.pageIndex+1 + '/' + popup.pages.length);
 		popup.displayItems(popup.pages[popup.pageIndex]);
 		
+	},
+	
+	updateCount: function(){
+		$('#count').text(popup.itemCount +'/50');
 	}
 }
 
