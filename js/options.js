@@ -13,11 +13,24 @@ var options = {
 		searchCategory: false,
 		trackList: false,
 	},
+	hideGuide: false,
 	start: function(){
-		chrome.storage.local.get(['track_list', 'interval', 'search_limit', 'category'], function(data){
+		chrome.storage.local.get(['hide', 'track_list', 'interval', 'search_limit', 'category'], function(data){
 			options.setVariables(data);
+			if(options.hideGuide){
+  				$('#note_content').hide();
+				$('h3').toggleClass('close');
+			}
+
 			options.appendElement(0); // display list
 			options.updateTrackLimit();
+			
+			$('h3').click(function(){
+				$(this).toggleClass('close');
+				$('#note_content').slideToggle(350);
+				options.hideGuide = !options.hideGuide;
+				chrome.storage.local.set({hide:options.hideGuide}, function(){console.log('hide saved')});
+			});
 			$('#interval').change(function(){
 				console.log('Interval changed');
 				options.changed.checkinterval = true;
@@ -29,6 +42,12 @@ var options = {
 			$('#category').change(function(){
 				console.log('Search source changed');
 				options.changed.searchCategory = true;
+			});
+			
+			$('#keyword').keyup(function(event){
+				if(event.keyCode == 13){
+					options.addItem();
+				}
 			});
 			$('#apply_settings').click(options.applySettings);
 			$('#add_keyword').click(options.addItem);
@@ -55,7 +74,14 @@ var options = {
 	},
 	
 	setVariables: function(data){
-		if(typeof data.track_list !== 'undefined')
+		if(data.hide !== undefined)
+		{
+			options.hideGuide = data.hide;	
+			console.log('hide loaded:' + options.hideGuide);
+		}
+		else
+			console.log('No hide found in storage');
+		if(data.track_list !== undefined)
 		{
 			options.tracking.list = data.track_list;
 			options.tracking.count = options.tracking.list.length;
@@ -64,7 +90,7 @@ var options = {
 		}
 		else
 			console.log('No track_list found in storage.');
-		if(typeof data.interval !== 'undefined')
+		if(data.interval !== undefined)
 		{
 			$('#interval').val(data.interval/60000 + ' minutes');
 			console.log('interval loaded: ' + data.interval);
@@ -72,7 +98,7 @@ var options = {
 		else
 			console.log('No interval found in storage.');
 			
-		if(typeof data.search_limit !== 'undefined')
+		if(data.search_limit !== undefined)
 		{
 			$('#search_limit').val(data.search_limit);
 			console.log('search_limit loaded: ' + data.search_limit);
@@ -80,7 +106,7 @@ var options = {
 		else
 			console.log('No search_limit found in storage.');
 			
-		if(typeof data.category !== 'undefined')
+		if(data.category !== undefined)
 		{
 			$('#category').val(data.category);
 			console.log('category loaded: ' + data.category);
@@ -274,7 +300,7 @@ var options = {
 	},
 	
 	resetAll: function(){
-		if(confirm('Clear storage and settings?\n(The extension must be reloaded after.)'))
+		if(confirm('Clear all saved data and settings?\n(The extension should be reloaded after.)'))
 		{
 
 			chrome.storage.local.clear(function(){
@@ -293,11 +319,6 @@ var options = {
 }
 
 $(document).ready(function(){
-  	$('#note_list').hide();
-
-	$('h3').click(function(){
-		$(this).toggleClass('close');
-		$('#note_list').slideToggle(350);
-	});
 	options.start();
+
 });

@@ -56,7 +56,7 @@ var parser = {
 					stock = 'sold';
 				if(url != bg.items.lastNewest){
 					bg.items.lastNewestFound = false;
-					console.log('Checking: ' + details);
+					console.log('Details: ' + details);
 					console.log('Stock: ' + stock);
 					console.log('Link: ' + url);
 					if(stock == 'sold')

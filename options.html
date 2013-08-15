@@ -4,14 +4,15 @@
 <meta charset="utf-8">
 <style type="text/css">
 	*{ font-family: Helvetica, Arial, sans-serif;}
-	html{height:100%}
-	body{ height: 100%; width: 800px; margin:auto; font-size:16px;background-color: #1c294d;color:#3f465c}
-	.wrapper{ background-color:#f5f0e0; border-width: 0px 6px;border-style: solid;border-color: #b23535; height: 100%;	
-	box-shadow: 0 0 15px #000;}
+	html{height: 100%}
+	body{height:inherit; width: 800px; margin:auto; font-size:16px;background-color: #1c294d;color:#3f465c}
+	.wrapper{ height: auto;
+min-height: 100% ; background-color:#f5f0e0; border-width: 0px 6px;border-style: solid;border-color: #b23535; box-shadow: 0 0 15px #000;}
 	div{padding: 6px;}
-	h3{margin:0px;background: url(img/open.png) no-repeat 0 11px; padding: 10px 0 0 25px;cursor: pointer;}
-	h3.close {background-image: url(img/close.png);}
+	h3{margin:0px;background: url(img/close.png) no-repeat 0 11px; padding: 10px 0 0 25px;cursor: pointer;}
+	h3.close {background-image: url(img/open.png);}
 	h2{display:inline;}
+	h4{margin-bottom: 5px;}
 	button{ font-size: 14px; color:#FFF; width:6em; background:#b23535}
 	.float_right{float: right; margin-left:5px}
 	.example {font-size: 12px; color:#999}
@@ -33,7 +34,7 @@
 
 <body>
 <div class="wrapper">
-    <h1> MANDRAKE TRACKER</h1>
+    <h1> MANDRAKE ITEM TRACKER OPTIONS</h1>
     <div id="options">
         <label title="Time interval between searches">Search interval: </label>
         <select id="interval">
@@ -46,7 +47,6 @@
         </select><br>
         <label title="Maximum number pages to search">Search page limit: </label>
         <input id="search_limit" type="number" min="1" max="10" step="1" value="5"/><br>
-        <!--<label>URL: </label><span id='http'>http://</span><input id="url"type="text" size="60" maxlength="128" value="ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html"/><button id="apply_url" class="float_right">Apply</button>-->
         <label title="Category to search">Search category: </label>
         <select id="category">
         	<option>All</option>
@@ -61,8 +61,22 @@
     <br>
     
     <div id="note">
-    <h3>Keyword guide</h3>
-        <ul id="note_list">
+    <h3>Usage Guide</h3>
+		<div id='note_content'>
+    	<h4 style="color:#F00">Important</h4>
+        The item display settings you have set on the <a href="http://ekizo.mandarake.co.jp/shop/en/search.do?action=whatsNew&doujin=all&displayDate=0" target="_blank">ekizo.mandarake.co.jp/shop/</a> website will affect this extension. The following options  must be set in order for this extension to function properly (default settings):
+		<ul>
+        	<li><i><b>Order of Display</b></i> must be set to <i><b>New Arrival</b></i></li>
+            <li><i><b>Sort of Display</b></i> must be set to <i><b>Descending Order</b></i></li>
+        </ul>
+        <h4>Recommended</h4>
+        These options can be set for improved performance.
+        <ul>
+        	<li><i><b>Number of Items</b></i> set to <i><b>100</b></i>. This will reduce the number of pages the extension needs to search through.</li>
+            <li><i><b>Sold Out</b></i> set to <i><b>Show All Including Sold Out Items</b></i>. The extension keeps track of the last newest item listing it found in order to know when to stop searching. If <i><b>Sold Out</b></i> is set to <i><b>Show Only Available Items</b></i> and the last newest item is sold out, the extension will miss it and will be forced to search through all the pages again (up to the search page limit). </li>
+        </ul>
+    	<h4>Keywords</h4>
+		<ul>
             <li>Keywords/phrases must be between 3 - 60 characters.</li>
             <li>You can store up to 30 keywords/phrases.</li>
             <li>They are case-insensitive. <span class='example'>e.g. <i><b>ALTER</b></i> is the same as <i><b>alter</b></i>.</span></li>
@@ -70,6 +84,7 @@
             <li>Enclose a phrase with double or single quotes for exact matching. <span class="example">e.g. <i><b>Nakano "Saber Alter"</b></i> will match <i><b>[Nakano]Good Smile - Saber Alter</b></i>, but it will not match <i><b>[Nakano] Saber Maid Alter</b></i>.</span></li> 
     
         </ul>
+        </div>
     </div>
     
     <div id="input">
@@ -77,7 +92,7 @@
     <input id="keyword" type="text" maxlength="60" size="55"/><button id="add_keyword" >Add</button>
     </div>
     
-    <div>
+    <div id="keyword_list">
         <h2 title="Keywords and phrases to search for">Keywords<span id="track_limit"></span></h2>
          <button id="save_list" class="float_right">Save</button><button id="clear_list" class="float_right">Clear</button><button id="reset" class="float_right">Reset</button>
         <ul id="tracking"></ul>

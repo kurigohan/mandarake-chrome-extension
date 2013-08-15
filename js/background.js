@@ -40,7 +40,7 @@ var background = {
 	},
 	
 	setVariables: function(data){
-		if(typeof data.track_list !== 'undefined'){
+		if(data.track_list !== undefined){
 			background.tracking.list = data.track_list;
 			console.log('Tracking list loaded: ');
 			console.log(background.tracking.list);
@@ -48,7 +48,7 @@ var background = {
 		else
 			console.log('No track_list found in storage.');
 			
-		if(typeof data.item_list !== 'undefined'){
+		if(data.item_list !== undefined){
 			background.items.list = data.item_list;
 			background.items.listCount = Object.keys(background.items.list).length;
 			console.log('Item list loaded: ');
@@ -58,7 +58,7 @@ var background = {
 		else
 			console.log('No item_list found in storage.');
 		
-		if(typeof data.removed_list !== 'undefined'){
+		if(data.removed_list !== undefined){
 			background.items.removed = data.removed_list;
 			background.items.removeCount = Object.keys(background.items.removed).length;
 			console.log('Removed list loaded: ');
