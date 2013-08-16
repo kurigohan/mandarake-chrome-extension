@@ -66,7 +66,9 @@ var options = {
 					$(this).closest('li').remove();
 					$('#limit').text(options.tracking.count + '/30');
 				}
-				else{alert('Could not remove item.');}
+				else{
+					alert('Could not remove item.');
+				}
 			}); //end .on
 		}); // end local.get
 		
@@ -78,7 +80,9 @@ var options = {
 			options.hideGuide = data.hide;	
 			console.log('hide loaded:' + options.hideGuide);
 		}
-		else{console.log('No hide found in storage');}
+		else{
+			console.log('No hide found in storage');
+		}
 		if(data.track_list !== undefined)
 		{
 			options.tracking.list = data.track_list;
@@ -86,27 +90,35 @@ var options = {
 			console.log('tracking_list loaded.');
 			console.log(options.tracking.list);
 		}
-		else{console.log('No track_list found in storage.');}
+		else{
+			console.log('No track_list found in storage.');
+		}
 		if(data.interval !== undefined)
 		{
 			$('#interval').val(data.interval/60000 + ' minutes');
 			console.log('interval loaded: ' + data.interval);
 		}
-		else{console.log('No interval found in storage.');}
+		else{
+			console.log('No interval found in storage.');
+		}
 			
 		if(data.search_limit !== undefined)
 		{
 			$('#search_limit').val(data.search_limit);
 			console.log('search_limit loaded: ' + data.search_limit);
 		}
-		else{console.log('No search_limit found in storage.');}
+		else{
+			console.log('No search_limit found in storage.');
+		}
 			
 		if(data.category !== undefined)
 		{
 			$('#category').val(data.category);
 			console.log('category loaded: ' + data.category);
 		}
-		else{console.log('No category found in storage.');}
+		else{
+			console.log('No category found in storage.');
+		}
 		
 	},
 	
@@ -148,9 +160,9 @@ var options = {
 						alert('Keyword already exists.');
 					}
 				}
-				else
+				else{
 					alert('Keywords must be at least 3 characters long not including spaces.');
-
+				}
 		}
 		else
 		{
@@ -181,7 +193,9 @@ var options = {
 			chrome.extension.sendRequest({action: 'change_interval', interval: newInterval*60000});
 			//alert('Interval changed to ' + newInterval + ' minutes.');
 		}
-		else{console.log('Interval is invalid or same as current. No changes made.');}
+		else{
+			console.log('Interval is invalid or same as current. No changes made.');
+		}
 	},
 	
 	changeSearchLimit: function(){
@@ -191,7 +205,9 @@ var options = {
 			chrome.extension.sendRequest({action: 'change_limit', limit: searchLimit});
 			//alert('Page limit changed to ' + searchLimit);
 		}
-		else{console.log('Invalid search page limit.');}
+		else{
+			console.log('Invalid search page limit.');
+		}
 	},
 	
 	changeIntervalId: function(){
@@ -212,7 +228,9 @@ var options = {
 		console.log(request);
 		if(request.interval !== undefined || request.source !== undefined)
 			chrome.extension.sendRequest(request);
-		else{console.log('Invalid interval/source.');}
+		else{
+			console.log('Invalid interval/source.');
+		}
 	},
 	
 	getCategoryUrl: function(){
@@ -232,7 +250,9 @@ var options = {
 			url = 'http://ekizo.mandarake.co.jp/shop/en/category-action-figure.html';
 		else if(category == 'gokin')
 			url = 'http://ekizo.mandarake.co.jp/shop/en/category-gokin.html';
-		else{console.log('Invalid category.');}
+		else{
+			console.log('Invalid category.');
+		}
 
 		return url;
 	},
@@ -288,7 +308,7 @@ var options = {
 	},
 	
 	resetAll: function(){
-		if(confirm('Clear all saved data and settings?\n(The extension must disabled and renabled after)'))
+		if(confirm('Reset all saved data and settings?\n(The extension must disabled and renabled after.)'))
 		{
 
 			chrome.storage.local.clear(function(){

@@ -26,7 +26,6 @@ var background = {
 	},
 	badgeCount: 0,
 	requesting: false, // Indicates if an xmlhttprequest is running
-	
 	start: function(){
 		//load settings and begin program
 		chrome.storage.local.getBytesInUse(null,function(bytesInUse) {console.log('Current Storage size: '+bytesInUse)});
@@ -35,17 +34,26 @@ var background = {
 			function(data){
 				background.setVariables(data);
 				background.updateBadge();
-				background.setNewInterval();		
+				if(background.items.lastNewest){
+					background.setNewInterval();
+				}
+				else{
+					console.log('First Run.');
+					background.getLastNewestOnly();
+				}
 		});	
 	},
 	
 	setVariables: function(data){
+
 		if(data.track_list !== undefined){
 			background.tracking.list = data.track_list;
 			console.log('Tracking list loaded: ');
 			console.log(background.tracking.list);
 		}
-		else{console.log('No track_list found in storage.');}
+		else{
+			console.log('No track_list found in storage.');
+		}
 			
 		if(data.item_list !== undefined){
 			background.items.list = data.item_list;
@@ -54,7 +62,9 @@ var background = {
 			console.log(background.items.list);
 			console.log('Length: ' + background.items.listCount);
 		}
-		else{console.log('No item_list found in storage.');}
+		else{
+			console.log('No item_list found in storage.');
+		}
 		
 		if(data.removed_list !== undefined){
 			background.items.removed = data.removed_list;
@@ -63,41 +73,64 @@ var background = {
 			console.log(background.items.removed);
 			console.log('Length: ' + background.items.removeCount);
 		}
-		else{console.log('No removed_list found in storage.');}
+		else{
+			console.log('No removed_list found in storage.');
+		}
 		
 		if(data.last_newest !== undefined){
 			background.items.lastNewest = data.last_newest;
 			console.log('Last newest item loaded: '+background.items.lastNewest);
 		}
-		else{console.log('No last_newest found in storage.');}	
+		else{
+			console.log('No last_newest found in storage.');
+		}	
 			
 		if(data.search_source !== undefined)
 		{
 			background.searchPage.source = data.search_source;
 			console.log('Search page source loaded: ' + background.searchPage.source);
 		}
-		else {console.log('No search_source found in storage.');}
+		else {
+			console.log('No search_source found in storage.');
+		}
 			
 		if(data.search_limit !== undefined)
 		{
 			background.searchPage.limit = data.search_limit;
 			console.log('Search page limit loaded: ' + background.searchPage.limit);
 		}
-		else{console.log('No search_limit found in storage.');}
+		else{
+			console.log('No search_limit found in storage.');
+		}
 			
 		if(data.badge_count !== undefined)
 		{
 			background.badgeCount = data.badge_count;
 			console.log('Badge count loaded: ' + background.badgeCount);
 		}
-		else{console.log('No badge_count found in storage.');}
+		else{
+			console.log('No badge_count found in storage.');
+		}
 			
 		if(data.interval >= 300000 && data.interval <= 3600000)
 		{
 			background.interval.time = data.interval;
 			console.log('Interval loaded: ' + background.interval.time);
 		}
-		else{console.log('Invalid interval loaded. Using default ' + background.interval.time);}
+		else{
+			console.log('Invalid interval loaded. Using default ' + background.interval.time);
+		}
+	},
+	
+	getLastNewestOnly: function(){
+		background.getPageSource(background.searchPage.source, function(data){
+				background.searchPageSource(data);
+			}); //end getPageSource
+					
+		background.interval.id = window.setInterval(function(){
+				background.checkPage(background.searchPage.source);
+			}, background.interval.time);	
+		console.log('interval.id set.');
 		
 	},
 	
@@ -119,13 +152,15 @@ var background = {
 		if(!background.requesting){ // send xmlhttprequest if there isn't one currently processing
 			background.checkPage(pageUrl);
 		}
-		else{console.log('A request is already in progress. A new one cannot be sent.');}
+		else{
+			console.log('A request is already in progress. A new one cannot be sent.');
+		}
 			
 		background.interval.id = window.setInterval(function(){
-					console.log('interval.id set.');
 					background.checkPage(pageUrl);
 				}
 				, background.interval.time);
+		console.log('interval.id set.');
 	},
 	
 	getPageSource: function(url, callback) {
@@ -172,14 +207,18 @@ var background = {
 
 			}); //end getPageSource
 		} // end if url && ...
-		else{console.log('Invalid url or empty tracking list. Page request not sent.');}
+		else{
+			console.log('Invalid url or empty tracking list. Page request not sent.');
+		}
 	},
 	
 	searchPageSource: function(page){
 		background.viewMode = parser.getView(page);
 		if(background.viewMode)
 			parser.searchForItems(background.viewMode, background);
-		else{console.log('Invalid view mode. Search cancelled.');}
+		else{
+			console.log('Invalid view mode. Search cancelled.');
+		}
 	},
 	
 	removeItem: function(url){

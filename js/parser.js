@@ -31,75 +31,89 @@ var parser = {
 		}
 	},
 	
-	searchForItems: function(view, bg){ //seletor, pageIndex){
+	searchForItems: function(view, bg){ 
 		console.log('Tracking list:');
 		console.log(bg.tracking.list);
-		//var trackingList = parser.convertToRegex(bg.tracking.list);
 		var trackingList = parser.splitTrackKeys(bg.tracking.list);
 		if(bg.searchPage.index == 0){
 			bg.items.currentNewest = view.$items.first().find('a:first').attr('href');
 			console.log('Current newest: ' + bg.items.currentNewest);
 		}
-		console.log('Stop at this item: ' + bg.items.lastNewest);
-		console.log('Parsing document...\n********************\n---START SEARCH---');
-		var details;
-		var url;
-		var stock;
-		var found = false;
-		view.$items.each(function(){
-			if(bg.items.listCount < 50){
-				url = $(this).find('a:first').attr('href');
-				details = $(this).find(view.detailSelector).text().trim();
-				details = details.replace(/\n/, '');
-				stock = $(this).find(view.stockSelector).text().trim().toLowerCase();
-				if(!stock)
-					stock = 'sold';
-				if(url != bg.items.lastNewest){
-					bg.items.lastNewestFound = false;
-					console.log('Details: ' + details);
-					console.log('Stock: ' + stock);
-					console.log('Link: ' + url);
-					if(stock == 'sold')
-						console.log('** Sold out. Skipped.');
+		if(bg.items.currentNewest){
+			if(bg.items.lastNewest){
+				console.log('Stop at this item: ' + bg.items.lastNewest);
+				console.log('Parsing document...\n********************\n---START SEARCH---');
+				var details;
+				var url;
+				var stock;
+				var found = false;
+				view.$items.each(function(){
+					if(bg.items.listCount < 50){
+						url = $(this).find('a:first').attr('href');
+						details = $(this).find(view.detailSelector).text().trim();
+						details = details.replace(/\n/, '');
+						stock = $(this).find(view.stockSelector).text().trim().toLowerCase();
+						if(!stock)
+							stock = 'sold';
+						if(url != bg.items.lastNewest){
+							bg.items.lastNewestFound = false;
+							console.log('Details: ' + details);
+							console.log('Stock: ' + stock);
+							console.log('Link: ' + url);
+							if(stock == 'sold'){
+								console.log('** Sold out. Skipped.');
+							}
+							else{
+								for(var i=0, len=trackingList.length; i<len; ++i)
+								{	
+									if(parser.compare(details, trackingList[i]))
+									{
+										console.log('^^^^MATCH FOUND^^^^');
+										if(!(bg.items.list[url]!==undefined) && !(bg.items.removed[url]!==undefined)){
+											bg.items.list[url] = details;
+											bg.items.listCount++;
+											bg.badgeCount++;
+										}
+										else
+											console.log('** Not added. Already in items.list or items.removed.');
+										break; // stop checking for matchs
+									}// end if compare
+								}// end for loop
+							}
+							console.log('-------------------');
+						}// end if url!=lastNewest
+						else{ // newest found
+							console.log('Stop item found. Stopping seach.');
+							bg.items.lastNewestFound = true;
+							console.log('Last newest set to current newest.');
+							bg.items.lastNewest = bg.items.currentNewest;
+							return false; //break out of .each loop 
+						}
+					}//end if count <
 					else{
-						for(var i=0, len=trackingList.length; i<len; ++i)
-						{	
-							if(parser.compare(details, trackingList[i]))
-							{
-								console.log('^^^^MATCH FOUND^^^^');
-								if(!(bg.items.list[url]!==undefined) && !(bg.items.removed[url]!==undefined)){
-									bg.items.list[url] = details;
-									bg.items.listCount++;
-									bg.badgeCount++;
-								}
-								else
-									console.log('** Not added. Already in items.list or items.removed.');
-								break; // stop checking for matchs
-							}// end if compare
-						}// end for loop
+						console.log('items.list full. Search stopped.');
+						bg.items.lastNewestFound = true;
+						return false;
 					}
-					console.log('-------------------');
-				}// end if url!=lastNewest
-				else{ // newest found
-					console.log('Stop item found. Stopping seach.');
-					bg.items.lastNewestFound = true;
-					console.log('Last newest set to current newest.');
-					bg.items.lastNewest = bg.items.currentNewest;
-					return false; //break out of .each loop 
-				}
-			}//end if count <
-			else{
-				console.log('items.list full. Search stopped.');
+				}); //end source.find
+				
+				console.log("---SEARCH COMPLETE---");
+				console.log(bg.items.list);
+				console.log('Item count: ' + Object.keys(bg.items.list).length + '\n********************');
+				bg.updateBadge();	
+				}// end if items.lastNewest
+			else{ //first run
+				bg.items.lastNewest = bg.items.currentNewest;
+				console.log('Getting last newest item only.');	
 				bg.items.lastNewestFound = true;
-				return false;
 			}
-		}); //end source.find
-		
-		console.log("---SEARCH COMPLETE---");
-		console.log(bg.items.list);
-		console.log('Item count: ' + Object.keys(bg.items.list).length + '\n********************');
-		bg.updateBadge();
-	//	bg.save();	
+			
+		}// end if items.currentNewest
+		else{
+			console.log('Invalid current newest. Search cancelled');
+			bg.items.lastNewestFound = true;
+		}
+
 	},
 	
 	splitTrackKeys: function(list){
@@ -125,33 +139,5 @@ var parser = {
 		}
 		return true;
 	},
-	
-	compare2: function(details, key){
-		var pattern = new RegExp(key);
-		return pattern.test(details.toLowerCase());
-	},
-	convertToRegex: function(list){
-		var newList = [];
-		var newKey;
-		for(var i=0, len=list.length; i<len; ++i)
-		{
-			
-			/*newKey = list[i].match(/[^"'\s]+|"[^"]+"|'[^']+'/g);
-			console.log(newKey);
-			for (var j=0; j< newKey.length;++j)
-			{
-				newKey[j] = '(?=(.|\\s)*' + newKey[j] + '(.|\\s)*)';
-			}
-			newList.push(newKey.join('').replace(/"|'/g,'').toLowerCase()+'.+');*/
-			newList.push(list[i].match(/[^"\s]+|"[^"]+"/g)
-						.join('(.|\\n)*')
-						.replace(/"/g, '')
-						.toLowerCase()
-						);
-		}
-		console.log('Converted tracking list items to regex:');
-		console.log(newList);
-		return newList;
-	}
-	
+
 }

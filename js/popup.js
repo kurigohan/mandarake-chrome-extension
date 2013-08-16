@@ -12,7 +12,7 @@ var popup = {
 			if(popup.itemCount >= 50){
 				$('#notify').text('Item list is full. Please remove some items.');
 			}
-			popup.updateCount();
+			popup.updateItemCount();
 			popup.createDisplayPage(page.background.items.list);
 
 			
@@ -53,17 +53,22 @@ var popup = {
 
 	removeItem: function(itemUrl){
 		var itemIndex = popup.findUrlIndex(itemUrl);
+		console.log(itemIndex);
+
 		if(itemIndex > -1){
 			popup.pages[popup.pageIndex].splice(itemIndex, 1);
+			console.log('Removed from page.');
+			console.log(popup.pages[popup.pageIndex]);
 			popup.itemCount--;
 			chrome.extension.sendRequest({action: 'remove_item', url: itemUrl});
 			popup.getNextPageItem();
-			popup.updateCount();
+			popup.updateItemCount();
 		}
 
 	},
 	
 	findUrlIndex: function(itemUrl){
+				console.log(popup.pages);
 		for(var i=0; i<popup.pages[popup.pageIndex].length;++i){
 			if(popup.pages[popup.pageIndex][i].url == itemUrl)
 				return i;	
@@ -83,7 +88,7 @@ var popup = {
 				if(popup.pages[i].length == 0)
 				{
 					popup.pages.splice(i, 1);	
-					$('#page').text(popup.pageIndex+1 + '/' + popup.pages.length);
+					popup.updatePageCount();
 				}
 			}
 			console.log(nextItem);
@@ -95,49 +100,46 @@ var popup = {
 		var len = Object.keys(list).length;
 		console.log('Item count: ' + len);
 		var arr = [];
-		if(len > 10){
-			var count  = 0;
-			for(var key in list)
-			{
-				arr.push({url:key, details:list[key]});
-				count++;
-				if(count % 10.0 == 0){
-					popup.pages.push(arr)
-					arr = [];
-				}
+		var count  = 0;
+		for(var key in list)
+		{
+			arr.push({url:key, details:list[key]});
+			count++;
+			if(count % 10.0 == 0){
+				popup.pages.push(arr)
+				arr = [];
 			}
-			if(arr.length)
-				popup.pages.push(arr);
-			//console.log(popup.pages);
-			$('#page').text('1/' + popup.pages.length)
-			
+		}
+		if(arr.length)
+			popup.pages.push(arr);
+		if(popup.pages.length){
 			$('#next').click(function(){
 				popup.changePage('next');
 			});
 			$('#back').click(function(){
 				popup.changePage('back');
 			});
-			
-			popup.displayItems(popup.pages[0]);
-
 		}
-		else
-		{
-			$('#page').text('1/1')
-			popup.displayItems(list);			
-		}
+		popup.updatePageCount();
+		popup.displayItems(popup.pages[0]);
 	},
 	changePage: function(direction){
 		if(direction == 'next' && popup.pageIndex < popup.pages.length-1)
 			popup.pageIndex++;
 		else if(direction == 'back' && popup.pageIndex > 0)
 			popup.pageIndex--;
-		$('#page').text(popup.pageIndex+1 + '/' + popup.pages.length);
+		popup.updatePageCount();
 		popup.displayItems(popup.pages[popup.pageIndex]);
 		
 	},
-	
-	updateCount: function(){
+	updatePageCount: function(){
+		var maxPages = popup.pages.length;
+		if(maxPages == 0)
+			maxPages = 1;
+		$('#page').text(popup.pageIndex+1 + '/' + maxPages);
+		
+	},
+	updateItemCount: function(){
 		$('#count').text(popup.itemCount +'/50');
 	}
 }

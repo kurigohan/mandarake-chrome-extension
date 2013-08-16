@@ -26,6 +26,7 @@ min-height: 100% ; background-color:#f5f0e0; border-width: 0px 6px;border-style:
 	#track_limit{margin-left: 10px; font-size: 14px; color:#CCC}
 	#input{margin-top: 10px}
 	input:focus{outline:none; box-shadow:0 0 2px #b23535}
+	#contact{font-weight:bold;}
 </style>
 <script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>
 <script type="text/javascript" src="js/options.js"></script>
@@ -56,7 +57,7 @@ min-height: 100% ; background-color:#f5f0e0; border-width: 0px 6px;border-style:
             <option value="doll">Doll</option>
             <option value="gokin">Gokin</option>
         </select>
-         <button id="apply_settings" class="float_right">Apply</button>
+         <button id="apply_settings" class="float_right" title="Apply settings">Apply</button>
     </div>
     <br>
     
@@ -78,10 +79,12 @@ min-height: 100% ; background-color:#f5f0e0; border-width: 0px 6px;border-style:
     	<h4>Keywords</h4>
 		<ul>
             <li>Keywords/phrases must be between 3 - 60 characters.</li>
-            <li>You can store up to 30 keywords/phrases.</li>
+            <li>You can have up to 30 keywords/phrases.</li>
             <li>They are case-insensitive. <span class='example'>e.g. <i><b>ALTER</b></i> is the same as <i><b>alter</b></i>.</span></li>
             <li>Phrases will match with an item description as long as all of its words appear in the description. <span class='example'>e.g. Key phrase <i><b>nakano alter saber</b></i> will match item description <i><b>[Nakano] Alter - Saber Lily</b></i>, but not <i><b>[Nakano] Good Smile - Saber</b></i>.</span></li>   
             <li>Enclose a phrase with double or single quotes for exact matching. <span class="example">e.g. <i><b>Nakano "Saber Alter"</b></i> will match <i><b>[Nakano]Good Smile - Saber Alter</b></i>, but it will not match <i><b>[Nakano] Saber Maid Alter</b></i>.</span></li> 
+            <br>
+            <span><b>If you encounter any bugs/error or have suggestions/questions, please contact me at <i>andyn1291@gmail.com</i>. <b></span>
     
         </ul>
         </div>
@@ -89,12 +92,12 @@ min-height: 100% ; background-color:#f5f0e0; border-width: 0px 6px;border-style:
     
     <div id="input">
 
-    <input id="keyword" type="text" maxlength="60" size="55"/><button id="add_keyword" >Add</button>
+    <input id="keyword" type="text" maxlength="60" size="55"/><button id="add_keyword" title="Add a keyword">Add</button>
     </div>
     
     <div id="keyword_list">
         <h2 title="Keywords and phrases to search for">Keywords<span id="track_limit"></span></h2>
-         <button id="save_list" class="float_right">Save</button><button id="clear_list" class="float_right">Clear</button><button id="reset" class="float_right">Reset</button>
+         <button id="save_list" class="float_right" title="Save changes to the keywords list">Save</button><button id="clear_list" class="float_right" title="Clear the keywords list">Clear</button><button id="reset" class="float_right" title="Clear all data and reset settings">Reset All</button>
         <ul id="tracking"></ul>
     </div>
 </div>
