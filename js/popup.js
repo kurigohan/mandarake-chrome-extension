@@ -120,6 +120,9 @@ var popup = {
 				popup.changePage('back');
 			});
 		}
+		else{
+			$('#content').prepend('Go to <a href="options.html" target="_blank"><b>options</b></a> to edit your tracking list.')	
+		}
 		popup.updatePageCount();
 		popup.displayItems(popup.pages[0]);
 	},

@@ -166,11 +166,11 @@ var background = {
 	getPageSource: function(url, callback) {
 		console.log('Fetching document: ' + url);
 		var xhr = new XMLHttpRequest();
-		background.requesting = true;
 		console.log('REQUEST STARTED');
-		xhr.open("GET", url, true);
+
+		background.requesting = true;
 		xhr.onreadystatechange = function() {
-			if (xhr.readyState == 4) {
+			if (xhr.readyState == 4 && xhr.status == 200) {
 				callback(xhr.responseText);
 
 				if(background.items.lastNewestFound == false){
@@ -191,6 +191,11 @@ var background = {
 				console.log('REQUEST ENDED.');
 			}
 		};
+		xhr.onerror = function(error) {
+					console.error('Error. Could not retrieve page.');
+					background.requesting = false;
+					};
+		xhr.open("GET", url, true);
 		xhr.send();
 	},
 	
@@ -230,7 +235,7 @@ var background = {
 		background.updateBadge();
 		console.log(url + ' removed.');
 		console.log(background.items.list);
-		if(background.items.removeCount >= 300){
+		if(background.items.removeCount >= 100){
 			background.items.removed = {};
 			background.items.removeCount = 0;
 			console.log('Removed list limit reach. Cleared.');

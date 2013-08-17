@@ -18,16 +18,16 @@ var options = {
 		chrome.storage.local.get(['hide', 'track_list', 'interval', 'search_limit', 'category'], function(data){
 			options.setVariables(data);
 			if(options.hideGuide){
-  				$('#note_content').hide();
-				$('h3').toggleClass('close');
+  				$('#guide_content').hide();
+				$('#guide_header').toggleClass('close');
 			}
 
 			options.appendElement(0); // display list
 			options.updateTrackLimit();
 			
-			$('h3').click(function(){
+			$('#guide_header').click(function(){
 				$(this).toggleClass('close');
-				$('#note_content').slideToggle(350);
+				$('#guide_content').slideToggle(350);
 				options.hideGuide = !options.hideGuide;
 				chrome.storage.local.set({hide:options.hideGuide}, function(){console.log('hide saved')});
 			});
@@ -204,9 +204,11 @@ var options = {
 			console.log('Change search page limit: ' + searchLimit);
 			chrome.extension.sendRequest({action: 'change_limit', limit: searchLimit});
 			//alert('Page limit changed to ' + searchLimit);
+			return '';
 		}
 		else{
 			console.log('Invalid search page limit.');
+			return 'Invalid search page limit.';
 		}
 	},
 	
@@ -214,15 +216,20 @@ var options = {
 		var request = {action:'change_interval'};
 		var interval;
 		var source;
+		var error = ''
 		if(options.changed.checkinterval){
 			interval = parseInt($('#interval').find(':selected').text(), 10);
 			if(interval>=5 && interval<=60)
 				request['interval'] = interval*60000;
+			else
+				error += ' Invalid interval.';
 		}
 		if(options.changed.searchCategory){
 			source = options.getCategoryUrl();
 			if(source)
 				request['source'] = source;
+			else
+				error += ' Invalid Source.';
 		}
 		console.log('Change interval/source:')
 		console.log(request);
@@ -231,6 +238,7 @@ var options = {
 		else{
 			console.log('Invalid interval/source.');
 		}
+		return error;
 	},
 	
 	getCategoryUrl: function(){
@@ -268,17 +276,20 @@ var options = {
 	},
 	
 	applySettings: function(){
+		var errors = '';
 		if(options.changed.searchLimit){
-			options.changeSearchLimit();	
+			errors += options.changeSearchLimit();
 			options.changed.searchLimit = false;
 		}
 		if(options.changed.checkinterval || options.changed.searchCategory){
-			options.changeIntervalId();
+			errors += options.changeIntervalId();
 			options.changed.checkinterval = false;
 			options.changed.searchCategory = false;
 		}
-
-		alert('Settings applied.');
+		if(errors)
+			alert('Error: ' + errors);
+		else
+			alert('Settings applied.');
 	},
 	
 	saveTrackList: function(){

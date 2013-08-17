@@ -9,20 +9,21 @@
 	.wrapper{ height: auto;
 min-height: 100% ; background-color:#f5f0e0; border-width: 0px 6px;border-style: solid;border-color: #b23535; box-shadow: 0 0 15px #000;}
 	div{padding: 6px;}
-	h3{margin:0px;background: url(img/close.png) no-repeat 0 11px; padding: 10px 0 0 25px;cursor: pointer;}
-	h3.close {background-image: url(img/open.png);}
-	h2{display:inline;}
-	h4{margin-bottom: 5px;}
 	button{ font-size: 14px; color:#FFF; width:6em; background:#b23535}
+	h2{display:inline;}
 	.float_right{float: right; margin-left:5px}
 	.example {font-size: 12px; color:#999}
 	.remove{float:right; text-decoration:none;color:#cd0000; }
 	#add_keyword{margin-left: 10px}
 	#options{border: 1px solid #b23535;}
+	#options_header{margin:10px 0;}
 	#tracking{margin-top:5px; overflow:auto;}
 	#tracking li{height:1.25em}
 	#tracking li:hover{font-weight:bold; background-color:#e5e5e5;}
-	#note{font-size: 14px; border: 1px solid #b23535;}
+	#guide_header{margin:0px;background: url(img/close.png) no-repeat 0 11px; padding: 10px 0 0 25px;cursor: pointer;}
+	#guide_header.close{background-image: url(img/open.png);}
+	#guide{font-size: 14px; border: 1px solid #b23535;}
+	#guide h4{margin-bottom: 5px; margin-top:5px}
 	#track_limit{margin-left: 10px; font-size: 14px; color:#CCC}
 	#input{margin-top: 10px}
 	input:focus{outline:none; box-shadow:0 0 2px #b23535}
@@ -35,8 +36,9 @@ min-height: 100% ; background-color:#f5f0e0; border-width: 0px 6px;border-style:
 
 <body>
 <div class="wrapper">
-    <h1> MANDRAKE ITEM TRACKER OPTIONS</h1>
+    <h1> MANDRAKE ITEM TRACKER</h1>
     <div id="options">
+        <h4 id="options_header">Options</h4>
         <label title="Time interval between searches">Search interval: </label>
         <select id="interval">
             <option>5 minutes</option>
@@ -61,9 +63,9 @@ min-height: 100% ; background-color:#f5f0e0; border-width: 0px 6px;border-style:
     </div>
     <br>
     
-    <div id="note">
-    <h3>Usage Guide</h3>
-		<div id='note_content'>
+    <div id="guide">
+    <h3 id="guide_header">Extension Guide</h3>
+		<div id='guide_content'>
     	<h4 style="color:#F00">Important</h4>
         The item display settings you have set on the <a href="http://ekizo.mandarake.co.jp/shop/en/search.do?action=whatsNew&doujin=all&displayDate=0" target="_blank">ekizo.mandarake.co.jp/shop/</a> website will affect this extension. The following options  must be set in order for this extension to function properly (default settings):
 		<ul>
@@ -71,7 +73,7 @@ min-height: 100% ; background-color:#f5f0e0; border-width: 0px 6px;border-style:
             <li><i><b>Sort of Display</b></i> must be set to <i><b>Descending Order</b></i></li>
         </ul>
         <h4>Recommended</h4>
-        These options can be set for improved performance.
+        These options can be set to improve performance.
         <ul>
         	<li><i><b>Number of Items</b></i> set to <i><b>100</b></i>. This will reduce the number of pages the extension needs to search through.</li>
             <li><i><b>Sold Out</b></i> set to <i><b>Show All Including Sold Out Items</b></i>. The extension keeps track of the last newest item listing it found in order to know when to stop searching. If <i><b>Sold Out</b></i> is set to <i><b>Show Only Available Items</b></i> and the last newest item is sold out, the extension will miss it and will be forced to search through all the pages again (up to the search page limit). </li>
