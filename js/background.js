@@ -14,6 +14,7 @@ var background = {
 	},
 	tracking: {
 		list: [],
+		changed: true // ensures parser splits tracking.list on start
 	}, 
 	interval: { 
 		time: 900000, // default interval (15 minutes)
@@ -149,18 +150,19 @@ var background = {
 			window.clearInterval(background.interval.id)
 			console.log('interval.id cleared.');
 		}
+
+			
+		background.interval.id = window.setInterval(function(){
+					background.checkPage(pageUrl);
+				}, background.interval.time);
+		console.log('interval.id set.');
+		
 		if(!background.requesting){ // send xmlhttprequest if there isn't one currently processing
 			background.checkPage(pageUrl);
 		}
 		else{
-			console.log('A request is already in progress. A new one cannot be sent.');
+			console.error('A request is already in progress. A new one cannot be sent.');
 		}
-			
-		background.interval.id = window.setInterval(function(){
-					background.checkPage(pageUrl);
-				}
-				, background.interval.time);
-		console.log('interval.id set.');
 	},
 	
 	getPageSource: function(url, callback) {
@@ -222,7 +224,7 @@ var background = {
 		if(background.viewMode)
 			parser.searchForItems(background.viewMode, background);
 		else{
-			console.log('Invalid view mode. Search cancelled.');
+			console.error('Invalid view mode. Search cancelled.');
 		}
 	},
 	
@@ -253,6 +255,7 @@ var background = {
 	
 	changeTracking: function(newTracking){
 		background.tracking.list = newTracking.list;
+		background.tracking.changed = true;
 	},
 	
 	save: function(){
@@ -303,7 +306,7 @@ var background = {
 				background.clear();
 				break;
 			default: 
-				console.log('Error: Invalid request action.');
+				console.error('Error: Invalid request action.');
 				break;
 		}
 	},

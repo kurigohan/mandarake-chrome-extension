@@ -13,6 +13,7 @@ var compareTestCase = {
         compareTestCase.literal();
         compareTestCase.noOrder();
         compareTestCase.specialChar();
+        compareTestCase.exclude();
     },
     oneWord: function () {
         var keyT = 'nakano';
@@ -170,9 +171,9 @@ var compareTestCase = {
         var keyT1 = 'FIGMA';
         var keyT2 = '"NaKaNO STORE"';
         var failed = {};
-        if(compare(testDetails, splitList(keyT1)) == false)
+        if(compare(testDetails, splitKey(keyT1)) == false)
             failed['keyT1'] = keyT1;
-        if(compare(testDetails, splitList(keyT2)) == false)
+        if(compare(testDetails, splitKey(keyT2)) == false)
             failed['keyT2'] = keyT2;
         if(Object.keys(failed).length > 0)
         {
@@ -182,59 +183,58 @@ var compareTestCase = {
         else
             console.log('Capitalize: PASSED');
         console.log('----------------------');
-   
+    },
+    
+    exclude: function(){
+        var keyT1 = 'figma |test|';   
+        var keyT2 = 'nakano |未開イタミ|';
+        var keyF1 = 'nakano |アイギス|';
+        var keyF2 = '|nakano store|';
+        var failed = {};
+        if(compare(testDetails,splitKey(keyT1)) == false)
+            failed['keyT1'] = keyT1;
+        if(compare(testDetails,splitKey(keyT2)) == false)
+            failed['keyT2'] = keyT2;
+        if(compare(testDetails,splitKey(keyF1)) == true)
+            failed['keyF1'] = keyF1;
+        if(compare(testDetails,splitKey(keyF2)) == true)
+            failed['keyF2'] = keyF2;        
+        if(Object.keys(failed).length > 0)
+        {
+            console.log('Exclude: FAILED');
+            console.log(failed);
+        }
+        else
+            console.log('Exclude: PASSED');
+        console.log('----------------------');
+            
         
     }
 
 }
 
-
-    function splitArr(list) {
-        var newKey;
-        var newList = [];
-        for (var i = 0, len = list.length; i < len; ++i) {
-            newKey = list[i].toLowerCase().match(/[^"'\s]+|"[^"]+"|'[^']+'/g);
-            for (var j = 0; j < newKey.length; ++j) {
-                newKey[j] = newKey[j].replace(/"|'/g, '');
-            }
-            newList.push(newKey);
-        }
-        console.log(newList);
-        return newList;
-    }
-
     function splitKey( key) {
-        var newKey = key.toLowerCase().match(/[^"'\s]+|"[^"]+"|'[^']+'/g);
+        var newKey = key.toLowerCase().match(/[^"'\s\|]+|"[^"]+"|'[^']+'|\|[^\|]+\|/g);
         for (var j = 0; j < newKey.length; ++j) {
-            newKey[j] = newKey[j].replace(/"|'/g, '');
+            newKey[j] = newKey[j].replace(/["']/g, '').replace(/\s{2,}|[\n\t]/g, ' ');
         }
+         console.log(newKey);
         return newKey;
 
     }
 
     function compare(details, key) {
         for (var j = 0; j < key.length; ++j) {
-            if(details.toLowerCase().indexOf(key[j]) == -1)
-            //if (details.toLowerCase().match(key[j]) == null) 
-            return false;
+            if(key[j].charAt(0) == '|'){
+                if(details.toLowerCase().indexOf(key[j].substring(1, key[j].length-1)) > -1)
+                    return false;
+            }
+            else if(details.toLowerCase().indexOf(key[j]) == -1){
+                    return false;
+            }
         }
         return true;
     }
 
-    function compareWithList(details, keys) {
-        var found = false;
-        for (var i = 0; i < keys.length; ++i) {
-            for (var j = 0; j < keys[i].length; ++j) {
-                if (details.toLowerCase().match(keys[i][j]) == null) {
-                    found = false;
-                    break;
-                } else {
-                    found = true;
-                }
-            }
-            if (found) break;
-        }
-        return found;
-    }
 
 compareTestCase.run();

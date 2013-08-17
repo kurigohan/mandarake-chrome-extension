@@ -64,7 +64,12 @@ var popup = {
 			popup.getNextPageItem();
 			popup.updateItemCount();
 		}
+		if(popup.pageIndex != 0 && popup.pages[popup.pageIndex].length == 0)
+		{
+			popup.displayItems(popup.pages[--popup.pageIndex]);
+		}
 
+		
 	},
 	
 	findUrlIndex: function(itemUrl){

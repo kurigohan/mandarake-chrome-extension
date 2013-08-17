@@ -52,7 +52,7 @@ min-height: 100% ; background-color:#f5f0e0; border-width: 0px 6px;border-style:
         <input id="search_limit" type="number" min="1" max="10" step="1" value="5"/><br>
         <label title="Category to search">Search category: </label>
         <select id="category">
-        	<option>All</option>
+        	<option value="all">All</option>
             <option disabled>——————</option>
             <option value="bishoujo" selected>Bishoujo Figure</option>
             <option value="model">Model Kit</option>
@@ -83,8 +83,8 @@ min-height: 100% ; background-color:#f5f0e0; border-width: 0px 6px;border-style:
             <li>Keywords/phrases must be between 3 - 60 characters.</li>
             <li>You can have up to 30 keywords/phrases.</li>
             <li>They are case-insensitive. <span class='example'>e.g. <i><b>ALTER</b></i> is the same as <i><b>alter</b></i>.</span></li>
-            <li>Phrases will match with an item description as long as all of its words appear in the description. <span class='example'>e.g. Key phrase <i><b>nakano alter saber</b></i> will match item description <i><b>[Nakano] Alter - Saber Lily</b></i>, but not <i><b>[Nakano] Good Smile - Saber</b></i>.</span></li>   
-            <li>Enclose a phrase with double or single quotes for exact matching. <span class="example">e.g. <i><b>Nakano "Saber Alter"</b></i> will match <i><b>[Nakano]Good Smile - Saber Alter</b></i>, but it will not match <i><b>[Nakano] Saber Maid Alter</b></i>.</span></li> 
+            <li>Phrases will match with an item description as long as all of its words appear somewhere in the description. <span class='example'>e.g. Key phrase <i><b>alter saber nakano</b></i> will match item description <i><b>[Nakano] Alter - Saber Lily</b></i>, but not <i><b>[Nakano] Good Smile - Saber</b></i>.</span></li>   
+            <li>Enclose a phrase with double or single quotes for precise matching. <span class="example">e.g. <i><b>nakano "saber alter"</b></i> will match <i><b>[Nakano]Good Smile - Saber Alter</b></i>, but it will not match <i><b>[Nakano] Saber Maid Alter</b></i>.</span></li> 
             <br>
             <span><b>If you encounter any bugs/error or have suggestions/questions, please contact me at <i>andyn1291@gmail.com</i>. <b></span>
     

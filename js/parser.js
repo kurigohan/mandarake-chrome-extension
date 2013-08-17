@@ -2,7 +2,7 @@
 //Requires background.js
 
 var parser = {
-		
+	trackList: [],
 	getView: function(page){
 		console.log('Determining document view setting...');
 		// Parse the page for use with JQuery (avoids get error with relative image paths)
@@ -26,7 +26,7 @@ var parser = {
 		}
 		else
 		{
-			console.log('View mode could not be determined.');
+			console.error('View mode could not be determined.');
 			return false;
 		}
 	},
@@ -34,13 +34,21 @@ var parser = {
 	searchForItems: function(view, bg){ 
 		console.log('Tracking list:');
 		console.log(bg.tracking.list);
-		var trackingList = parser.splitTrackKeys(bg.tracking.list);
 		if(bg.searchPage.index == 0){
 			bg.items.currentNewest = view.$items.first().find('a:first').attr('href');
 			console.log('Current newest: ' + bg.items.currentNewest);
 		}
 		if(bg.items.currentNewest){
 			if(bg.items.lastNewest){
+				if(bg.tracking.changed){ //Split keywords if needed
+					console.log('Tracking list changed since last search. Split required.');
+					parser.trackList = parser.splitKeywords(bg.tracking.list);
+					bg.tracking.changed = false;
+				}
+				else{
+					console.log('Tracking list unchanged.');
+					console.log(parser.trackList);	
+				}
 				console.log('Stop at this item: ' + bg.items.lastNewest);
 				console.log('Parsing document...\n********************\n---START SEARCH---');
 				var details;
@@ -51,7 +59,9 @@ var parser = {
 					if(bg.items.listCount < 50){
 						url = $(this).find('a:first').attr('href');
 						details = $(this).find(view.detailSelector).text().trim();
-						details = details.replace(/\n/, '');
+						//details = details.replace(/\n/, '');
+						//replace tabs, multiple spaces, newlines with single space
+						details = details.replace(/\s{2,}|[\n\t]/g, ' '); 
 						stock = $(this).find(view.stockSelector).text().trim().toLowerCase();
 						if(!stock)
 							stock = 'sold';
@@ -64,9 +74,9 @@ var parser = {
 								console.log('** Sold out. Skipped.');
 							}
 							else{
-								for(var i=0, len=trackingList.length; i<len; ++i)
+								for(var i=0, len=parser.trackList.length; i<len; ++i)
 								{	
-									if(parser.compare(details, trackingList[i]))
+									if(parser.compare(details, parser.trackList[i]))
 									{
 										console.log('^^^^MATCH FOUND^^^^');
 										if(!(bg.items.list[url]!==undefined) && !(bg.items.removed[url]!==undefined)){
@@ -91,7 +101,7 @@ var parser = {
 						}
 					}//end if count <
 					else{
-						console.log('items.list full. Search stopped.');
+						console.error('items.list full. Search stopped.');
 						bg.items.lastNewestFound = true;
 						return false;
 					}
@@ -110,20 +120,20 @@ var parser = {
 			
 		}// end if items.currentNewest
 		else{
-			console.log('Invalid current newest. Search cancelled');
+			console.error('Invalid current newest. Search cancelled');
 			bg.items.lastNewestFound = true;
 		}
 
 	},
 	
-	splitTrackKeys: function(list){
+	splitKeywords: function(list){
 		var newKey;
 		var newList = [];
 		for(var i=0, len=list.length; i<len; ++i)
 		{
-			newKey = list[i].toLowerCase().match(/[^"'\s]+|"[^"]+"|'[^']+'/g);
+			newKey = list[i].toLowerCase().match(/[^"'\s\|]+|"[^"]+"|'[^']+'/g);
 			for(var j=0; j<newKey.length;++j)
-				newKey[j] = newKey[j].replace(/"|'/g, '');
+				newKey[j] = newKey[j].replace(/["']/g, '').replace(/\s{2,}|[\n\t]/g, ' '); 
 			newList.push(newKey);
 		}
 		console.log('Tracking list split: ');
@@ -133,9 +143,13 @@ var parser = {
 	
 	compare: function(details, key){
 		for(var i=0; i<key.length;++i){
-			if(details.toLowerCase().indexOf(key[i]) == -1)
-			//if(details.toLowerCase().match(key[i]) == null)
-				return false;
+ 			if(key[i].charAt(0) == '|'){
+                if(details.toLowerCase().indexOf(key[i].substring(1, key[i].length-1)) > -1)
+                    return false;
+            }
+            else if(details.toLowerCase().indexOf(key[i]) == -1){
+                    return false;
+            }
 		}
 		return true;
 	},
