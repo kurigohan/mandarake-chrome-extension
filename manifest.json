@@ -1,9 +1,9 @@
 {
   "name": "Mandrake Item Tracker",
-  "version": "0.94",
+  "version": "0.95",
   "author": "Andy Nguyen",
   "manifest_version": 2,
-  "description": "Track ekizo.mandarake.co.jp for figure listings.",
+  "description": "Track ekizo.mandarake.co.jp for new item listings.",
   "options_page": "options.html",
   "icons": {
     "128": "img/icon_128.png",

@@ -65,11 +65,12 @@ var parser = {
 						stock = $(this).find(view.stockSelector).text().trim().toLowerCase();
 						if(!stock)
 							stock = 'sold';
+						console.log('Details: ' + details);
+						console.log('Stock: ' + stock);
+						console.log('Link: ' + url);
 						if(url != bg.items.lastNewest){
-							bg.items.lastNewestFound = false;
-							console.log('Details: ' + details);
-							console.log('Stock: ' + stock);
-							console.log('Link: ' + url);
+							//
+							
 							if(stock == 'sold'){
 								console.log('** Sold out. Skipped.');
 							}
@@ -93,11 +94,11 @@ var parser = {
 							console.log('-------------------');
 						}// end if url!=lastNewest
 						else{ // newest found
-							console.log('Stop item found. Stopping seach.');
+							console.log('^^^^STOP FOUND^^^^');
 							bg.items.lastNewestFound = true;
 							console.log('Last newest set to current newest.');
 							bg.items.lastNewest = bg.items.currentNewest;
-							return false; //break out of .each loop 
+							//return false; //break out of .each loop 
 						}
 					}//end if count <
 					else{
@@ -131,7 +132,7 @@ var parser = {
 		var newList = [];
 		for(var i=0, len=list.length; i<len; ++i)
 		{
-			newKey = list[i].toLowerCase().match(/[^"'\s\|]+|"[^"]+"|'[^']+'/g);
+			newKey = list[i].toLowerCase().match(/[^"'\s\|]+|"[^"]+"|'[^']+'|\|[^\|]+\|/g);
 			for(var j=0; j<newKey.length;++j)
 				newKey[j] = newKey[j].replace(/["']/g, '').replace(/\s{2,}|[\n\t]/g, ' '); 
 			newList.push(newKey);

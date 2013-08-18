@@ -5,7 +5,7 @@
 <style type="text/css">
 	*{ font-family: Helvetica, Arial, sans-serif;}
 	html{height: 100%}
-	body{height:inherit; width: 800px; margin:auto; font-size:16px;background-color: #1c294d;color:#3f465c}
+	body{height:inherit; width: 850px; margin:auto; font-size:16px;background-color: #1c294d;color:#3f465c}
 	.wrapper{ height: auto;
 min-height: 100% ; background-color:#f5f0e0; border-width: 0px 6px;border-style: solid;border-color: #b23535; box-shadow: 0 0 15px #000;}
 	div{padding: 6px;}
@@ -39,17 +39,10 @@ min-height: 100% ; background-color:#f5f0e0; border-width: 0px 6px;border-style:
     <h1> MANDRAKE ITEM TRACKER</h1>
     <div id="options">
         <h4 id="options_header">Options</h4>
-        <label title="Time interval between searches">Search interval: </label>
-        <select id="interval">
-            <option>5 minutes</option>
-            <option>10 minutes</option>
-            <option selected>15 minutes</option>
-            <option>30 minutes</option>
-            <option>45 minutes</option>
-            <option>60 minutes</option>
-        </select><br>
-        <label title="Maximum number pages to search">Search page limit: </label>
-        <input id="search_limit" type="number" min="1" max="10" step="1" value="5"/><br>
+        <label title="Time between searches (whole minutes)">Search interval: </label>
+        <input id="interval" type="number" min="1" max="60" step="1" value="5"/> minutes<br>
+        <label title="Maximum number pages to search (1-10)">Search page limit: </label>
+        <input id="search_limit" type="number" min="1" max="10" step="1" value="5"/> pages<br>
         <label title="Category to search">Search category: </label>
         <select id="category">
         	<option value="all">All</option>
@@ -58,6 +51,7 @@ min-height: 100% ; background-color:#f5f0e0; border-width: 0px 6px;border-style:
             <option value="model">Model Kit</option>
             <option value="doll">Doll</option>
             <option value="gokin">Gokin</option>
+            <option value="ame">American</option>
         </select>
          <button id="apply_settings" class="float_right" title="Apply settings">Apply</button>
     </div>
@@ -75,8 +69,8 @@ min-height: 100% ; background-color:#f5f0e0; border-width: 0px 6px;border-style:
         <h4>Recommended</h4>
         These options can be set to improve performance.
         <ul>
-        	<li><i><b>Number of Items</b></i> set to <i><b>100</b></i>. This will reduce the number of pages the extension needs to search through.</li>
-            <li><i><b>Sold Out</b></i> set to <i><b>Show All Including Sold Out Items</b></i>. The extension keeps track of the last newest item listing it found in order to know when to stop searching. If <i><b>Sold Out</b></i> is set to <i><b>Show Only Available Items</b></i> and the last newest item is sold out, the extension will miss it and will be forced to search through all the pages again (up to the search page limit). </li>
+        	<li><i><b>Number of Items</b></i> set to <i><b>50</b></i> or <i><b>100</b></i>. This will reduce the number of pages the extension needs to search through.</li>
+            <li><i><b>Sold Out</b></i> set to <i><b>Show All Including Sold Out Items</b></i>. The extension keeps track of the last newest item listing it found in order to know when to stop searching. If <i><b>Sold Out</b></i> is set to <i><b>Show Only Available Items</b></i> and the last newest item is sold out, the extension will miss it and will be forced to search through all the pages again (up to the search page limit). The extension will only notify you of in-stock items regardless of this setting.</li>
         </ul>
     	<h4>Keywords</h4>
 		<ul>
@@ -85,7 +79,8 @@ min-height: 100% ; background-color:#f5f0e0; border-width: 0px 6px;border-style:
             <li>They are case-insensitive. <span class='example'>e.g. <i><b>ALTER</b></i> is the same as <i><b>alter</b></i>.</span></li>
             <li>Phrases will match with an item description as long as all of its words appear somewhere in the description. <span class='example'>e.g. Key phrase <i><b>alter saber nakano</b></i> will match item description <i><b>[Nakano] Alter - Saber Lily</b></i>, but not <i><b>[Nakano] Good Smile - Saber</b></i>.</span></li>   
             <li>Enclose a phrase with double or single quotes for precise matching. <span class="example">e.g. <i><b>nakano "saber alter"</b></i> will match <i><b>[Nakano]Good Smile - Saber Alter</b></i>, but it will not match <i><b>[Nakano] Saber Maid Alter</b></i>.</span></li> 
-            <br>
+          	<li>Enclose a word or phrase with vertical bars (|) if you want to exclude it. <span class="example">e.g. <i><b>saber |figma|</b></i> will match <i><b>Good Smile - Saber</b></i> but not <i><b>Max Factory - Saber Figma</b></i>.</span>
+            <br><br>
             <span><b>If you encounter any bugs/error or have suggestions/questions, please contact me at <i>andyn1291@gmail.com</i>. <b></span>
     
         </ul>

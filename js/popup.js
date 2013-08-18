@@ -67,6 +67,8 @@ var popup = {
 		if(popup.pageIndex != 0 && popup.pages[popup.pageIndex].length == 0)
 		{
 			popup.displayItems(popup.pages[--popup.pageIndex]);
+			popup.pages.splice(popup.pages.length-1,1);
+			popup.updatePageCount();
 		}
 
 		

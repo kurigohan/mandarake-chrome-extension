@@ -17,7 +17,7 @@ var background = {
 		changed: true // ensures parser splits tracking.list on start
 	}, 
 	interval: { 
-		time: 900000, // default interval (15 minutes)
+		time: 300000, // default interval (5 minutes)
 		id: null
 	},  
 	searchPage: {
@@ -113,7 +113,7 @@ var background = {
 			console.log('No badge_count found in storage.');
 		}
 			
-		if(data.interval >= 300000 && data.interval <= 3600000)
+		if(data.interval >= 60000 && data.interval <= 3600000)
 		{
 			background.interval.time = data.interval;
 			console.log('Interval loaded: ' + background.interval.time);
@@ -166,15 +166,19 @@ var background = {
 	},
 	
 	getPageSource: function(url, callback) {
+		background.requesting = true;
 		console.log('Fetching document: ' + url);
 		var xhr = new XMLHttpRequest();
+		var abortTimerId = window.setTimeout(function(){
+			xhr.abort();
+			console.log('Request timed out.');
+			background.requesting = false;
+			}, 20000);
 		console.log('REQUEST STARTED');
-
-		background.requesting = true;
 		xhr.onreadystatechange = function() {
 			if (xhr.readyState == 4 && xhr.status == 200) {
+				window.clearTimeout(abortTimerId);
 				callback(xhr.responseText);
-
 				if(background.items.lastNewestFound == false){
 					var nextUrl = background.getPageUrl(background.searchPage.index);
 					console.log(nextUrl);
@@ -192,16 +196,20 @@ var background = {
 				background.requesting = false;
 				console.log('REQUEST ENDED.');
 			}
-		};
+		}; //end onreadystatechange
 		xhr.onerror = function(error) {
 					console.error('Error. Could not retrieve page.');
 					background.requesting = false;
 					};
 		xhr.open("GET", url, true);
 		xhr.send();
+		
 	},
 	
 	checkPage: function(url){
+		console.log('lastNewestFound equals '+background.items.lastNewestFound);
+		background.items.lastNewestFound = false;
+		console.log('background.items.lastNewestFound set to false');
 		var url = background.getPageUrl(background.searchPage.index);
 
 		if(url && background.tracking.list.length){
@@ -217,6 +225,7 @@ var background = {
 		else{
 			console.log('Invalid url or empty tracking list. Page request not sent.');
 		}
+
 	},
 	
 	searchPageSource: function(page){
@@ -237,7 +246,7 @@ var background = {
 		background.updateBadge();
 		console.log(url + ' removed.');
 		console.log(background.items.list);
-		if(background.items.removeCount >= 100){
+		if(background.items.removeCount >= 200){
 			background.items.removed = {};
 			background.items.removeCount = 0;
 			console.log('Removed list limit reach. Cleared.');
@@ -317,10 +326,12 @@ var background = {
 		background.items.lastNewest = '';
 		background.items.changed = false;
 		background.tracking.list = [];
+		background.tracking.changed = true;
 		background.badgeCount = 0;
 		background.updateBadge();
 		background.interval.time = 900000;
 		background.searchPage.limit = 5;
+		backgrounb.searchPage.index = 0;
 		background.searchPage.source = 'http://ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html';
 		window.clearInterval(background.interval.id);
 		console.log('All variables cleared.'); 	

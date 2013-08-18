@@ -95,7 +95,7 @@ var options = {
 		}
 		if(data.interval !== undefined)
 		{
-			$('#interval').val(data.interval/60000 + ' minutes');
+			$('#interval').val(data.interval/60000);
 			console.log('interval loaded: ' + data.interval);
 		}
 		else{
@@ -161,7 +161,7 @@ var options = {
 					}
 				}
 				else{
-					alert('Keywords must be at least 3 characters long not including spaces.');
+					alert('Keywords must be at least 3 characters long not including spaces and less than 61 characters.');
 				}
 		}
 		else
@@ -184,20 +184,6 @@ var options = {
 		};
 	},
 	
-	changeInterval: function(){
-		var newInterval =  parseInt($('#interval').find(':selected').text(), 10);
-		console.log('Change interval to ' + newInterval);
-		// make sure interval different from current and is within the range 5 - 60 minutes
-		if(newInterval>=5 && newInterval<=60) 
-		{
-			chrome.extension.sendRequest({action: 'change_interval', interval: newInterval*60000});
-			//alert('Interval changed to ' + newInterval + ' minutes.');
-		}
-		else{
-			console.log('Interval is invalid or same as current. No changes made.');
-		}
-	},
-	
 	changeSearchLimit: function(){
 		var searchLimit = parseInt($('#search_limit').val(), 10);
 		if(searchLimit > 0 && searchLimit <= 10){
@@ -218,18 +204,18 @@ var options = {
 		var source;
 		var error = ''
 		if(options.changed.checkinterval){
-			interval = parseInt($('#interval').find(':selected').text(), 10);
-			if(interval>=5 && interval<=60)
+			interval = parseInt($('#interval').val(), 10);
+			if(interval>=1 && interval<=60)
 				request['interval'] = interval*60000;
 			else
-				error += ' Invalid interval.';
+				error += 'Interval must be between 1 - 60 minutes. ';
 		}
 		if(options.changed.searchCategory){
 			source = options.getCategoryUrl();
 			if(source)
 				request['source'] = source;
 			else
-				error += ' Invalid Source.';
+				error += 'Invalid Source.';
 		}
 		console.log('Change interval/source:')
 		console.log(request);
@@ -258,6 +244,8 @@ var options = {
 			url = 'http://ekizo.mandarake.co.jp/shop/en/category-action-figure.html';
 		else if(category == 'gokin')
 			url = 'http://ekizo.mandarake.co.jp/shop/en/category-gokin.html';
+		else if(category == 'ame')
+			url = 'http://ekizo.mandarake.co.jp/shop/en/category-ame-toy.html';
 		else{
 			console.log('Invalid category.');
 		}
@@ -328,7 +316,6 @@ var options = {
 				$('#interval').val(15 + ' minutes');
 				$('#category').val('bishoujo');
 				$('#search_limit').val('5');
-
 				chrome.extension.sendRequest({action:'clear'});
 			});
 
