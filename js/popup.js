@@ -60,7 +60,7 @@ var popup = {
 			console.log('Removed from page.');
 			console.log(popup.pages[popup.pageIndex]);
 			popup.itemCount--;
-			chrome.extension.sendRequest({action: 'remove_item', url: itemUrl});
+			chrome.runtime.sendMessage({action: 'remove_item', url: itemUrl});
 			popup.getNextPageItem();
 			popup.updateItemCount();
 		}

@@ -16,10 +16,10 @@ var background = {
 		list: [],
 		changed: true // ensures parser splits tracking.list on start
 	}, 
-	interval: { 
-		time: 300000, // default interval (5 minutes)
-		id: null
-	},  
+	alarmInfo:{
+		delayInMinutes: 5,
+		periodInMinutes: 5
+	},
 	searchPage: {
 		source: 'http://ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html',
 		index: 0, // current display page index; used to get the next page url
@@ -27,22 +27,35 @@ var background = {
 	},
 	badgeCount: 0,
 	requesting: false, // Indicates if an xmlhttprequest is running
-	start: function(){
+	startup: function(){
 		//load settings and begin program
 		chrome.storage.local.getBytesInUse(null,function(bytesInUse) {console.log('Current Storage size: '+bytesInUse)});
 		chrome.storage.local.get(['track_list', 'item_list',  'removed_list', 'last_newest', 
-									'search_source', 'search_limit','badge_count', 'interval'], 
+									'search_source', 'search_limit','badge_count', 'alarm'], 
 			function(data){
 				background.setVariables(data);
 				background.updateBadge();
 				if(background.items.lastNewest){
-					background.setNewInterval();
+					background.setAlarm();
 				}
 				else{
 					console.log('First Run.');
 					background.getLastNewestOnly();
 				}
 		});	
+	},
+	
+	run: function(){
+		//load settings and check source
+		chrome.storage.local.getBytesInUse(null,function(bytesInUse) {console.log('Current Storage size: '+bytesInUse)});
+		chrome.storage.local.get(['track_list', 'item_list',  'removed_list', 'last_newest', 
+									'search_source', 'search_limit','badge_count', 'alarm'], 
+			function(data){
+				background.setVariables(data);
+				background.updateBadge();
+				background.startSearch();
+		});	
+		
 	},
 	
 	setVariables: function(data){
@@ -113,13 +126,15 @@ var background = {
 			console.log('No badge_count found in storage.');
 		}
 			
-		if(data.interval >= 60000 && data.interval <= 3600000)
+		if(data.alarm !== undefined)
 		{
-			background.interval.time = data.interval;
-			console.log('Interval loaded: ' + background.interval.time);
+			background.alarmInfo = data.alarm;
+			console.log('Alarm delay loaded: ');
+			console.log(background.alarmInfo);
 		}
 		else{
-			console.log('Invalid interval loaded. Using default ' + background.interval.time);
+			console.log('Invalid alarm info loaded. Using default.');
+			console.log(background.alarmInfo);
 		}
 	},
 	
@@ -127,58 +142,53 @@ var background = {
 		background.getPageSource(background.searchPage.source, function(data){
 				background.searchPageSource(data);
 			}); //end getPageSource
-					
-		background.interval.id = window.setInterval(function(){
-				background.checkPage(background.searchPage.source);
-			}, background.interval.time);	
-		console.log('interval.id set.');
+		chrome.alarms.create("startSearchAlarm", background.alarmInfo);
+		console.log('Alarm set.');
 		
 	},
 	
-	setNewInterval: function(time, url){
+	setAlarm: function(time, url){
 		var pageUrl;
 		if(url)
 			pageUrl = url;
 		else
 			pageUrl = background.searchPage.source;
-		if(!isNaN(time) && time!=background.interval.time){
-			background.interval.time = time;
-			console.log('Interval changed: ' + background.interval.time);	
-		}
-
-		if(background.interval.id){
-			window.clearInterval(background.interval.id)
-			console.log('interval.id cleared.');
-		}
-
 			
-		background.interval.id = window.setInterval(function(){
-					background.checkPage(pageUrl);
-				}, background.interval.time);
-		console.log('interval.id set.');
-		
-		if(!background.requesting){ // send xmlhttprequest if there isn't one currently processing
-			background.checkPage(pageUrl);
+		if(!isNaN(time) && time!=background.alarmInfo.periodInMinutes){
+			background.alarmInfo.periodInMinutes = background.alarmInfo.delayInMinutes = time;
+			console.log('Interval changed: ' + background.alarmInfo.periodInMinutes);	
+		}
+		if(background.requesting == false){
+			background.startSearch();
 		}
 		else{
-			console.error('A request is already in progress. A new one cannot be sent.');
+			console.error('A request is already in progress. Check page cancelled.');
 		}
+		
+		chrome.alarms.create("startSearchAlarm", background.alarmInfo);
+		chrome.alarms.getAll(function(alarms){console.log(alarms)});
+		console.log('Alarm set.');
 	},
 	
 	getPageSource: function(url, callback) {
 		background.requesting = true;
 		console.log('Fetching document: ' + url);
 		var xhr = new XMLHttpRequest();
+		
 		var abortTimerId = window.setTimeout(function(){
 			xhr.abort();
-			console.log('Request timed out.');
+			console.error('Request timed out.');
 			background.requesting = false;
 			}, 20000);
+			
 		console.log('REQUEST STARTED');
 		xhr.onreadystatechange = function() {
 			if (xhr.readyState == 4 && xhr.status == 200) {
 				window.clearTimeout(abortTimerId);
 				callback(xhr.responseText);
+				background.requesting = false;
+				console.log('REQUEST ENDED.');
+
 				if(background.items.lastNewestFound == false){
 					var nextUrl = background.getPageUrl(background.searchPage.index);
 					console.log(nextUrl);
@@ -193,39 +203,37 @@ var background = {
 						console.log(background.items.lastNewest);
 					}
 				}
-				background.requesting = false;
-				console.log('REQUEST ENDED.');
-			}
+
+			}// end if xhr.readyState
 		}; //end onreadystatechange
 		xhr.onerror = function(error) {
 					console.error('Error. Could not retrieve page.');
 					background.requesting = false;
+					xhr.abort();
 					};
 		xhr.open("GET", url, true);
 		xhr.send();
 		
 	},
 	
-	checkPage: function(url){
-		console.log('lastNewestFound equals '+background.items.lastNewestFound);
-		background.items.lastNewestFound = false;
-		console.log('background.items.lastNewestFound set to false');
-		var url = background.getPageUrl(background.searchPage.index);
-
-		if(url && background.tracking.list.length){
-			background.getPageSource(url, function(data){
-					background.searchPageSource(data);
-					if(background.items.lastNewestFound == false){
-						background.searchPage.index++;
-						console.log('Next page needed.');
-					}
-
-			}); //end getPageSource
-		} // end if url && ...
-		else{
-			console.log('Invalid url or empty tracking list. Page request not sent.');
-		}
-
+	startSearch: function(){
+		  console.log('lastNewestFound equals '+background.items.lastNewestFound);
+		  background.items.lastNewestFound = false;
+		  console.log('background.items.lastNewestFound set to false');
+		  var url = background.getPageUrl(background.searchPage.index);
+		  if(url && background.tracking.list.length){
+			  background.getPageSource(url, function(data){
+					  background.searchPageSource(data);
+					  if(background.items.lastNewestFound == false){
+						  background.searchPage.index++;
+						  console.log('Next page needed.');
+					  }
+	
+			  }); //end getPageSource
+		  } // end if url && ...
+		  else{
+			  console.error('Invalid url or empty tracking list. Page request not sent.');
+		  }
 	},
 	
 	searchPageSource: function(page){
@@ -270,7 +278,7 @@ var background = {
 	save: function(){
 		chrome.storage.local.set({'item_list':background.items.list, 'last_newest':background.items.lastNewest, 
 		 'track_list':background.tracking.list, 'removed_list':background.items.removed,
-		 'interval':background.interval.time, 'search_source':background.searchPage.source,
+		 'alarm':background.alarmInfo, 'search_source':background.searchPage.source,
 		 'search_limit':background.searchPage.limit, 'badge_count':background.badgeCount}, function(){
 				console.log('Background saved.');	
 		});
@@ -286,7 +294,7 @@ var background = {
 		else return '';
 	},
 	
-	onRequest: function(request, sender){
+	onMessage: function(request, sender){
 		switch(request.action)
 		{
 			case 'remove_item':	
@@ -297,13 +305,13 @@ var background = {
 				console.log('change_tracking request received');
 				background.changeTracking(request.tracking);	
 				break;
-			case 'change_interval':
-				console.log('change_interval request received.');
+			case 'change_alarm':
+				console.log('change_alarm request received.');
 				if(request.source !== undefined){
 					background.searchPage.source = request.source;
 					console.log('New search page source set: '+background.searchPage.source);
 				}
-				background.setNewInterval(request.interval);
+				background.setAlarm(request.interval);
 				break;
 			case 'change_limit':
 				console.log('change_limit request received.');
@@ -320,6 +328,15 @@ var background = {
 		}
 	},
 	
+	onAlarm: function(alarm){
+		if(alarm.name == 'startSearchAlarm'){
+			background.run();
+		}
+		else{
+			console.error('Could not handle alarm event. Invalid alarm name.');
+		}
+	},
+	
 	clear: function(){
 		background.items.list = {};
 		background.items.removed = {};
@@ -329,11 +346,11 @@ var background = {
 		background.tracking.changed = true;
 		background.badgeCount = 0;
 		background.updateBadge();
-		background.interval.time = 900000;
+		background.alarmInfo = { delayInMinutes: 5, periodInMinutes: 5};
 		background.searchPage.limit = 5;
 		backgrounb.searchPage.index = 0;
 		background.searchPage.source = 'http://ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html';
-		window.clearInterval(background.interval.id);
+		chrome.alarms.clearAll();
 		console.log('All variables cleared.'); 	
 		chrome.storage.local.getBytesInUse(null, function(bytesInUse){console.log('Current storage size: '+bytesInUse)});
 	}
@@ -341,6 +358,12 @@ var background = {
 };
 
 
-chrome.extension.onRequest.addListener(background.onRequest); 	// wire up the listener	
+// add event listeners	
+
+chrome.runtime.onSuspend.addListener(function(){background.save; console.log('UNLOADED');});
+chrome.runtime.onStartup.addListener(background.startup);
+chrome.runtime.onInstalled.addListener(background.startup);
+chrome.alarms.onAlarm.addListener(background.onAlarm);
+chrome.runtime.onMessage.addListener(background.onMessage); 	
 chrome.windows.onRemoved.addListener(background.save);
-background.start();
+

@@ -115,7 +115,7 @@ var parser = {
 				}// end if items.lastNewest
 			else{ //first run
 				bg.items.lastNewest = bg.items.currentNewest;
-				console.log('Getting last newest item only.');	
+				console.log('Get last newest item only.');	
 				bg.items.lastNewestFound = true;
 			}
 			
