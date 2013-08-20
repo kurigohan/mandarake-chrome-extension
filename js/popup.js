@@ -58,7 +58,7 @@ var popup = {
 		if(itemIndex > -1){
 			popup.pages[popup.pageIndex].splice(itemIndex, 1);
 			console.log('Removed from page.');
-			console.log(popup.pages[popup.pageIndex]);
+		//	console.log(popup.pages[popup.pageIndex]);
 			popup.itemCount--;
 			chrome.runtime.sendMessage({action: 'remove_item', url: itemUrl});
 			popup.getNextPageItem();
@@ -75,7 +75,7 @@ var popup = {
 	},
 	
 	findUrlIndex: function(itemUrl){
-				console.log(popup.pages);
+		//console.log(popup.pages);
 		for(var i=0; i<popup.pages[popup.pageIndex].length;++i){
 			if(popup.pages[popup.pageIndex][i].url == itemUrl)
 				return i;	
@@ -98,7 +98,7 @@ var popup = {
 					popup.updatePageCount();
 				}
 			}
-			console.log(nextItem);
+			//console.log(nextItem);
 			$('#figure_list').append(popup.constructTag(nextItem.url, nextItem.details));
 		}
 	},

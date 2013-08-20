@@ -59,7 +59,6 @@ var parser = {
 					if(bg.items.listCount < 50){
 						url = $(this).find('a:first').attr('href');
 						details = $(this).find(view.detailSelector).text().trim();
-						//details = details.replace(/\n/, '');
 						//replace tabs, multiple spaces, newlines with single space
 						details = details.replace(/\s{2,}|[\n\t]/g, ' '); 
 						stock = $(this).find(view.stockSelector).text().trim().toLowerCase();
@@ -69,8 +68,6 @@ var parser = {
 						console.log('Stock: ' + stock);
 						console.log('Link: ' + url);
 						if(url != bg.items.lastNewest){
-							//
-							
 							if(stock == 'sold'){
 								console.log('** Sold out. Skipped.');
 							}
@@ -109,13 +106,13 @@ var parser = {
 				}); //end source.find
 				
 				console.log("---SEARCH COMPLETE---");
-				console.log(bg.items.list);
+		//		console.log(bg.items.list);
 				console.log('Item count: ' + Object.keys(bg.items.list).length + '\n********************');
 				bg.updateBadge();	
 				}// end if items.lastNewest
 			else{ //first run
 				bg.items.lastNewest = bg.items.currentNewest;
-				console.log('Get last newest item only.');	
+				console.log('Getting last newest item only.');	
 				bg.items.lastNewestFound = true;
 			}
 			

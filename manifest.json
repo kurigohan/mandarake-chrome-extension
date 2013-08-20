@@ -1,6 +1,6 @@
 {
   "name": "Mandrake Item Tracker",
-  "version": "0.97",
+  "version": "0.975",
   "author": "Andy Nguyen",
   "manifest_version": 2,
   "description": "Track ekizo.mandarake.co.jp for new item listings.",
@@ -16,10 +16,9 @@
   },
  
   "background": {
-    "scripts":["js/jquery-2.0.3.min.js","js/parser.js", "js/background.js"],
-	"persistent": false
+    "scripts":["js/jquery-2.0.3.min.js","js/parser.js", "js/background.js"]
   },
-  "permissions": ["storage", "tabs", "alarms", "http://ekizo.mandarake.co.jp/*"],
+  "permissions": ["storage", "tabs",  "http://ekizo.mandarake.co.jp/*"],
   "offline_enabled": false,
   "minimum_chrome_version": "20"
 }

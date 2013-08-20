@@ -13,10 +13,9 @@ var options = {
 		searchCategory: false,
 		trackList: false,
 	},
-	interval: 5,
 	hideGuide: false,
 	start: function(){
-		chrome.storage.local.get(['hide', 'track_list', 'alarm', 'search_limit', 'category'], function(data){
+		chrome.storage.local.get(['hide', 'track_list', 'interval', 'search_limit', 'category'], function(data){
 			options.setVariables(data);
 			if(options.hideGuide){
   				$('#guide_content').hide();
@@ -54,6 +53,9 @@ var options = {
 			$('#add_keyword').click(options.addItem);
 			$('#save_list').click(options.saveTrackList);
 			$('#clear_list').click(options.clearList);
+			$('#apply_interval').click(options.changeInterval);
+			$('#apply_limit').click(options.changeSearchLimit);
+			$('#apply_url').click(options.changeUrl);
 			$('#reset').click(options.resetAll);
 		
 			
@@ -86,15 +88,15 @@ var options = {
 			options.tracking.list = data.track_list;
 			options.tracking.count = options.tracking.list.length;
 			console.log('tracking_list loaded.');
-			console.log(options.tracking.list);
+			//console.log(options.tracking.list);
 		}
 		else{
 			console.log('No track_list found in storage.');
 		}
-		if(data.alarm !== undefined)
+		if(data.interval !== undefined)
 		{
-			$('#interval').val(data.alarm.periodInMinutes);
-			console.log('interval loaded: ' + data.alarm.periodInMinutes);
+			$('#interval').val(data.interval/60000);
+			console.log('interval loaded: ' + data.interval);
 		}
 		else{
 			console.log('No interval found in storage.');
@@ -125,7 +127,7 @@ var options = {
 		{
 			options.tracking.list[index] = '';
 			console.log('Removed at ' + index);
-			console.log(options.tracking.list);
+			//console.log(options.tracking.list);
 			options.changed.trackList = true;
 			options.tracking.count--;
 			options.updateTrackLimit();
@@ -148,7 +150,7 @@ var options = {
 						options.appendElement(options.tracking.list.length-1);
 						options.changed.trackList = true;
 						console.log('Added: ' + newKey);
-						console.log(options.tracking.list);
+						//console.log(options.tracking.list);
 						options.tracking.count++;
 						options.updateTrackLimit();
 					}
@@ -196,15 +198,15 @@ var options = {
 		}
 	},
 	
-	changeAlarm: function(){
-		var msg = {action:'change_alarm'};
+	changeIntervalId: function(){
+		var msg = {action:'change_interval'};
 		var interval;
 		var source;
 		var error = ''
 		if(options.changed.checkinterval){
 			interval = parseInt($('#interval').val(), 10);
 			if(interval>=1 && interval<=60)
-				msg['interval'] = interval;
+				msg['interval'] = interval*60000;
 			else
 				error += 'Interval must be between 1 - 60 minutes. ';
 		}
@@ -268,7 +270,7 @@ var options = {
 			options.changed.searchLimit = false;
 		}
 		if(options.changed.checkinterval || options.changed.searchCategory){
-			errors += options.changeAlarm();
+			errors += options.changeIntervalId();
 			options.changed.checkinterval = false;
 			options.changed.searchCategory = false;
 		}
@@ -285,7 +287,7 @@ var options = {
 				options.tracking.list = options.tracking.list.filter(function(s){return s!==''});
 				//options.tracking.list = temp;
 				console.log('Cleaned options.tracking.list');
-				console.log(options.tracking.list);
+				//console.log(options.tracking.list);
 				options.appendElement(0, true);
 				
 				chrome.runtime.sendMessage({action: 'change_tracking', tracking: options.tracking});
@@ -311,10 +313,10 @@ var options = {
 			chrome.storage.local.clear(function(){
 				console.log('Storage cleared.');
 				options.clearList();
-				$('#interval').val('5');
+				$('#interval').val(15 + ' minutes');
 				$('#category').val('bishoujo');
 				$('#search_limit').val('5');
-				chrome.extension.sendRequest({action:'clear'});
+				chrome.runtime.sendMessage({action:'clear'});
 			});
 
 		}
