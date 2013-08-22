@@ -325,6 +325,7 @@ var background = {
 	clear: function(){
 		background.items.list = {};
 		background.items.removed = {};
+		background.items.currentNewest = '';
 		background.items.lastNewest = '';
 		background.items.changed = false;
 		background.tracking.list = [];

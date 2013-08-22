@@ -193,8 +193,8 @@ var options = {
 			return '';
 		}
 		else{
-			console.log('Invalid search page limit.');
-			return 'Invalid search page limit.';
+			console.log('Invalid search page limit. ');
+			return 'Search page limit must be between 1-10.';
 		}
 	},
 	
@@ -247,7 +247,7 @@ var options = {
 		else if(category == 'ame')
 			url = 'http://ekizo.mandarake.co.jp/shop/en/category-ame-toy.html';
 		else{
-			console.log('Invalid category.');
+			console.log('Invalid category. ');
 		}
 
 		return url;
