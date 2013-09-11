@@ -22,8 +22,9 @@ Manual Installation
 Automatic Installation
 Go to https://chrome.google.com/webstore/detail/mandarake-item-tracker/nfeghgkfchoemgjaioampkoelipegdmj?hl=en-US
 
-
+-------------------------
 How It Works
+
 Upon launching Chrome, background.js is loaded and persistently runs in the background. Background.js fetches pages from Mandarake periodically using AJAX.
 The fetched paged is parsed to retrieve the html elements containing the item listing information. The listing information is compared to the list of keywords provided by the user and notifies the user if any matches are found. To view found matches, the user clicks on the the extension icon which executes popup.js. Popup.js loads the items into popup.html.
 In order to edit the tracking list or extension options, the user goes to options.html which executes options.js to display the appropriate content.
