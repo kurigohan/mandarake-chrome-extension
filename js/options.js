@@ -44,11 +44,12 @@ var options = {
 				options.changed.searchCategory = true;
 			});
 			
+			/*
 			$('#keyword').keyup(function(event){
 				if(event.keyCode == 13){
 					options.addItem();
 				}
-			});
+			});*/
 			$('#apply_settings').click(options.applySettings);
 			$('#add_keyword').click(options.addItem);
 			$('#save_list').click(options.saveTrackList);
