@@ -19,7 +19,9 @@ Manual Installation
 - In chrome, go to settings -> tools -> extensions
 - Check the developer mode box in the top right corner
 - Click 'Load unpacked extension' and select the unzipped folder
+
 Automatic Installation
+
 Go to https://chrome.google.com/webstore/detail/mandarake-item-tracker/nfeghgkfchoemgjaioampkoelipegdmj?hl=en-US
 
 -------------------------
