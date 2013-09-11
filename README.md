@@ -12,3 +12,18 @@ Searching:
 - You can filter a specific word or phrase using vertical bars (|). So if your searching for Saber figures but hate figmas, you can do 'saber |figma|' to exclude all figmas.
 - The extension knows when to stop searching when it encounters the newest item it found on its last search. So if you closed Chrome and came back the next day, the extension will check all the new items that were added when you were offline (there's a limit on the amount of pages it will check though).
 
+
+--------------------------
+Manual Installation
+- Download the extension zip and unzip it to your computer
+- In chrome, go to settings -> tools -> extensions
+- Check the developer mode box in the top right corner
+- Click 'Load unpacked extension' and select the unzipped folder
+Automatic Installation
+Go to https://chrome.google.com/webstore/detail/mandarake-item-tracker/nfeghgkfchoemgjaioampkoelipegdmj?hl=en-US
+
+
+How It Works
+Upon launching Chrome, background.js is loaded and persistently runs in the background. Background.js fetches pages from Mandarake periodically using AJAX.
+The fetched paged is parsed to retrieve the html elements containing the item listing information. The listing information is compared to the list of keywords provided by the user and notifies the user if any matches are found. To view found matches, the user clicks on the the extension icon which executes popup.js. Popup.js loads the items into popup.html.
+In order to edit the tracking list or extension options, the user goes to options.html which executes options.js to display the appropriate content.
