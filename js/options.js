@@ -2,18 +2,19 @@
 
 var options = {
 	tracking: {
-		list: [],
-		count: 0
+		list: [], // array of keywords
+		count: 0 // keyword count
 		//added: false // set to true when a new item is added to the list
 					 // tells options.saveTrackList to reset background.items.lastNewest 
 	},
-	changed: {
+	changed: { // indicates which option was changed
 		checkinterval: false,
 		searchLimit: false, 
 		searchCategory: false,
-		trackList: false,
+		trackList: false, 
 	},
-	hideGuide: false,
+	hideGuide: false, // hide extension guide
+
 	start: function(){
 		chrome.storage.local.get(['hide', 'track_list', 'interval', 'search_limit', 'category'], function(data){
 			options.setVariables(data);
@@ -123,9 +124,12 @@ var options = {
 		
 	},
 	
+	// remove keyword from tracking list
 	removeItem: function(index){
+		// if tracking.list not invalid
 		if(typeof options.tracking.list[index] !== 'undefined' &&  options.tracking.list[index] !== null)
 		{
+			// set keyword to empty string
 			options.tracking.list[index] = '';
 			console.log('Removed at ' + index);
 			//console.log(options.tracking.list);
@@ -139,10 +143,12 @@ var options = {
 
 	},
 	
+	// add keyword to tracking list
 	addItem: function(){
-		if(options.tracking.count < 30){
+		// ensure word does not exceed 30 chars
+		if(options.tracking.count <= 30){
 			var newKey = $('#keyword').val().trim();
-				
+				// don't allow words less than 3 chars long or more than 60 chars long
 				if(newKey.replace(/ /g,'').length >= 3 && newKey.length <= 60)
 				{
 					$('#keyword').val('');
@@ -171,7 +177,9 @@ var options = {
 			alert('The tracking list is full.');	
 		}
 	},
-	
+
+
+	// display keywords by creating tags from keywords and inserting into appropriate element
 	appendElement: function(start, clear){
 		var $tracking = $('#tracking');
 		if(clear)
@@ -185,6 +193,7 @@ var options = {
 		};
 	},
 	
+	// change the max number of pages to search
 	changeSearchLimit: function(){
 		var searchLimit = parseInt($('#search_limit').val(), 10);
 		if(searchLimit > 0 && searchLimit <= 10){
@@ -199,6 +208,7 @@ var options = {
 		}
 	},
 	
+	// change the interval id
 	changeIntervalId: function(){
 		var msg = {action:'change_interval'};
 		var interval;
@@ -228,6 +238,7 @@ var options = {
 		return error;
 	},
 	
+	// change the search category url
 	getCategoryUrl: function(){
 		var category = $('#category').find(':selected').val();
 		console.log(category);
@@ -254,8 +265,7 @@ var options = {
 		return url;
 	},
 	
-
-	
+	// clear the keyword list
 	clearList: function(){
 		options.tracking.list = [];
 		options.tracking.count = 0;
@@ -264,6 +274,7 @@ var options = {
 		options.updateTrackLimit();
 	},
 	
+	// apply the option settings
 	applySettings: function(){
 		var errors = '';
 		if(options.changed.searchLimit){
@@ -281,6 +292,7 @@ var options = {
 			alert('Settings applied.');
 	},
 	
+	// save the keyword list
 	saveTrackList: function(){
 		if(options.changed.trackList){
 			if(confirm('Save changes to the tracking list?'))
@@ -303,10 +315,12 @@ var options = {
 		} 
 	},
 	
+	// update the keyword list limit
 	updateTrackLimit: function(){
 		$('#track_limit').text(options.tracking.count + '/30');
 	},
 	
+	// reset all variables and clear storage 
 	resetAll: function(){
 		if(confirm('Reset all saved data and settings?\n(The extension must disabled and renabled after.)'))
 		{

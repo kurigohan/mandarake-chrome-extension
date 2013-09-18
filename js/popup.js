@@ -5,14 +5,16 @@ var popup = {
 	pageIndex: 0,
 	itemCount: 0,
 	start: function(){
-		
+		// retrieve background for processing 
 		chrome.runtime.getBackgroundPage(function(page){
 			console.log(page.background.items.list);
 			popup.itemCount = page.background.items.listCount;
+			// check if item list full
 			if(popup.itemCount >= 50){
 				$('#notify').text('Item list is full. Please remove some items.');
 			}
 			popup.updateItemCount();
+			// create popup pages and display popup
 			popup.createDisplayPage(page.background.items.list);
 
 			
@@ -27,6 +29,7 @@ var popup = {
 		});
 	},
 	
+	// display list of found items in the popup
 	displayItems: function(list){
 		var display = '';
 		if(list instanceof Array){
@@ -43,6 +46,7 @@ var popup = {
 		
 	},
 	
+	// create list tag for an item
 	constructTag: function(url, details){
 		var tag = '<li><a href="#" class="remove">x</a><a href=http://ekizo.mandarake.co.jp/shop/en/' +
 					url + ' target="_blank" class="item">' +
@@ -51,6 +55,7 @@ var popup = {
 		
 	},
 
+	// remove an item given its url
 	removeItem: function(itemUrl){
 		var itemIndex = popup.findUrlIndex(itemUrl);
 		console.log(itemIndex);
@@ -74,6 +79,7 @@ var popup = {
 		
 	},
 	
+	// get index of item in popup
 	findUrlIndex: function(itemUrl){
 		//console.log(popup.pages);
 		for(var i=0; i<popup.pages[popup.pageIndex].length;++i){
@@ -84,6 +90,7 @@ var popup = {
 		return -1;
 	},
 	
+	// shift items up one on the popup pages  (after remove)
 	getNextPageItem: function(){
 		var pagesLeft = popup.pages.length-(popup.pageIndex+1);
 		if( pagesLeft >= 1){
@@ -103,6 +110,8 @@ var popup = {
 		}
 	},
 	
+
+	// create popup pages
 	createDisplayPage: function(list){
 		var len = Object.keys(list).length;
 		console.log('Item count: ' + len);
@@ -133,15 +142,20 @@ var popup = {
 		popup.updatePageCount();
 		popup.displayItems(popup.pages[0]);
 	},
+
+	// switch pages
 	changePage: function(direction){
-		if(direction == 'next' && popup.pageIndex < popup.pages.length-1)
+		if(direction == 'next' && popup.pageIndex < popup.pages.length-1){
 			popup.pageIndex++;
-		else if(direction == 'back' && popup.pageIndex > 0)
+		}
+		else if(direction == 'back' && popup.pageIndex > 0){
 			popup.pageIndex--;
+		}
 		popup.updatePageCount();
 		popup.displayItems(popup.pages[popup.pageIndex]);
 		
 	},
+
 	updatePageCount: function(){
 		var maxPages = popup.pages.length;
 		if(maxPages == 0)
@@ -149,6 +163,7 @@ var popup = {
 		$('#page').text(popup.pageIndex+1 + '/' + maxPages);
 		
 	},
+
 	updateItemCount: function(){
 		$('#count').text(popup.itemCount +'/50');
 	}

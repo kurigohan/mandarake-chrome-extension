@@ -1,32 +1,33 @@
 // JavaScript Document
 var background = {
 	items: {
-		list: {}, 
-		//removed: {}, // stores urls that were removed by the user in popup. 
+		list: {},  // associative array of items
+		removed: {}, // associative array of removed items, stores urls that were removed by the user in popup. 
 					 // ensures parser.searchForItems() doesn't add removed items to items.list again.
-		removed: {},
 		lastNewest: '', // parser.searchForItems() will stop when this is encountered
 		currentNewest: '', // holds the current newest item while last newest item is being searched for
-		lastNewestFound: false,
-		listCount: 0,
-		removeCount: 0,
-		changed: false
+		lastNewestFound: false, // indicates if newest item on previous search was found
+		listCount: 0, // number of items
+		removeCount: 0, // number of removed items
+		changed: false // indicates if items changed
 	},
 	tracking: {
-		list: [],
+		list: [], // array of key words
 		changed: true // ensures parser splits tracking.list on start
 	}, 
 	interval: { 
 		time: 300000, // default interval (5 minutes)
-		id: null
+		id: null // interval id
 	},  
 	searchPage: {
 		source: 'http://ekizo.mandarake.co.jp/shop/en/category-bishojo-figure.html',
 		index: 0, // current display page index; used to get the next page url
 		limit: 5 // max number of pages to search
 	},
-	badgeCount: 0,
+	badgeCount: 0, // number of new items the user hasn't viewed yet
 	requesting: false, // Indicates if an xmlhttprequest is running
+
+	// begin program
 	start: function(){
 		//load settings and begin program
 		chrome.storage.local.getBytesInUse(null,function(bytesInUse) {console.log('Current Storage size: '+bytesInUse)});
@@ -35,11 +36,14 @@ var background = {
 			function(data){
 				background.setVariables(data);
 				background.updateBadge();
+
+				// if lastNewest does not exist, then program is running for first time
 				if(background.items.lastNewest){
 					background.setNewInterval();
 				}
 				else{
 					console.log('First Run.');
+					// get lastNewest only, don't search entire webpage
 					background.getLastNewestOnly();
 				}
 		});	
@@ -123,6 +127,7 @@ var background = {
 		}
 	},
 	
+	// get the first item of the webpage only
 	getLastNewestOnly: function(){
 		background.getPageSource(background.searchPage.source, function(data){
 				background.searchPageSource(data);
@@ -135,12 +140,15 @@ var background = {
 		
 	},
 	
+	// change interval between searches
 	setNewInterval: function(time, url){
 		var pageUrl;
-		if(url)
+		if(url){
 			pageUrl = url;
-		else
+		}
+		else{
 			pageUrl = background.searchPage.source;
+		}
 		if(!isNaN(time) && time!=background.interval.time){
 			background.interval.time = time;
 			console.log('Interval changed: ' + background.interval.time);	
@@ -164,7 +172,8 @@ var background = {
 			console.error('A request is already in progress. A new one cannot be sent.');
 		}
 	},
-	
+
+	// retrieve webpage
 	getPageSource: function(url, callback) {
 		background.requesting = true;
 		console.log('Fetching document: ' + url);
@@ -185,10 +194,11 @@ var background = {
 				if(background.items.lastNewestFound == false){
 					var nextUrl = background.getPageUrl(background.searchPage.index);
 					console.log('Next page url: ' + nextUrl);
+					// fetch next page if lastNewest not found on current page
 					if(nextUrl != ''){
 						background.getPageSource(nextUrl, callback);
 					}
-					else{
+					else{ // stop fetching next page if page limit reached
 						console.log('Page limit reached. Stopping search');
 						background.searchPage.index = 0;
 						background.items.lastNewest = background.items.currentNewest;
@@ -208,6 +218,7 @@ var background = {
 		
 	},
 	
+	// check web page
 	checkPage: function(url){
 		console.log('lastNewestFound equals '+background.items.lastNewestFound);
 		background.items.lastNewestFound = false;
@@ -230,6 +241,7 @@ var background = {
 
 	},
 	
+	// search the fetched web page
 	searchPageSource: function(page){
 		background.viewMode = parser.getView(page);
 		if(background.viewMode)
@@ -239,6 +251,7 @@ var background = {
 		}
 	},
 	
+	// remove item from item list
 	removeItem: function(url){
 		delete background.items.list[url];
 		background.items.removed[url] = '';
@@ -255,6 +268,7 @@ var background = {
 		}
 	},
 	
+	// update badge count
 	updateBadge: function(){
 		if(background.badgeCount > 0){
 			chrome.browserAction.setBadgeText({text: background.badgeCount.toString()});
@@ -264,11 +278,13 @@ var background = {
 		}
 	},
 	
+	// change keyword list 
 	changeTracking: function(newTracking){
 		background.tracking.list = newTracking.list;
 		background.tracking.changed = true;
 	},
 	
+	// save 
 	save: function(){
 		chrome.storage.local.set({'item_list':background.items.list, 'last_newest':background.items.lastNewest, 
 		 'track_list':background.tracking.list, 'removed_list':background.items.removed,
@@ -278,6 +294,7 @@ var background = {
 		});
 	},
 	
+	// get page url given index (page number)
 	getPageUrl: function(index){
 		console.log('Fetch Page index: ' + index);
 		if(index == 0)
@@ -322,6 +339,7 @@ var background = {
 		}
 	},
 	
+	// clear all variables
 	clear: function(){
 		background.items.list = {};
 		background.items.removed = {};

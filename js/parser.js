@@ -31,6 +31,7 @@ var parser = {
 		}
 	},
 	
+	// compare items on webpage to keyword list
 	searchForItems: function(view, bg){ 
 		console.log('Tracking list:');
 		console.log(bg.tracking.list);
@@ -54,36 +55,40 @@ var parser = {
 				var details;
 				var url;
 				var stock;
-				var found = false;
+				var found = false; // found last newest 
 				view.$items.each(function(){
 					if(bg.items.listCount < 50){
 						url = $(this).find('a:first').attr('href');
 						details = $(this).find(view.detailSelector).text().trim();
-						//replace tabs, multiple spaces, newlines with single space
+						// replace tabs, multiple spaces, newlines with single space
 						details = details.replace(/\s{2,}|[\n\t]/g, ' '); 
 						stock = $(this).find(view.stockSelector).text().trim().toLowerCase();
-						if(!stock)
+						if(!stock){ // set stock to sold if stock is empty
 							stock = 'sold';
+						}
 						console.log('Details: ' + details);
 						console.log('Stock: ' + stock);
 						console.log('Link: ' + url);
-						if(url != bg.items.lastNewest){
-							if(stock == 'sold'){
+						if(url != bg.items.lastNewest){ // check if last newest item found
+							if(stock == 'sold'){ // skip sold out items
 								console.log('** Sold out. Skipped.');
 							}
 							else{
 								for(var i=0, len=parser.trackList.length; i<len; ++i)
 								{	
-									if(parser.compare(details, parser.trackList[i]))
+									// compare item details to the words in the split trackiing list
+									if(parser.compare(details, parser.trackList[i])) 
 									{
 										console.log('^^^^MATCH FOUND^^^^');
+										// make sure the item does not already exist in the item found list or removed items list
 										if(!(bg.items.list[url]!==undefined) && !(bg.items.removed[url]!==undefined)){
 											bg.items.list[url] = details;
 											bg.items.listCount++;
 											bg.badgeCount++;
 										}
-										else
+										else{
 											console.log('** Not added. Already in items.list or items.removed.');
+										}
 										break; // stop checking for matchs
 									}// end if compare
 								}// end for loop
@@ -124,6 +129,8 @@ var parser = {
 
 	},
 	
+	// Split keyword phrases into arrays of individual words. 
+	// Word encloses in double quotes or vertical bars are not split.
 	splitKeywords: function(list){
 		var newKey;
 		var newList = [];
@@ -139,9 +146,11 @@ var parser = {
 		return newList;
 	},
 	
+	// Compare each word in the keyword list to item details
 	compare: function(details, key){
 		for(var i=0; i<key.length;++i){
- 			if(key[i].charAt(0) == '|'){
+			// if vertical bar found, make sure word enclosed is not in item details
+ 			if(key[i].charAt(0) == '|'){ 
                 if(details.toLowerCase().indexOf(key[i].substring(1, key[i].length-1)) > -1)
                     return false;
             }
