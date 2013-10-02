@@ -9,18 +9,29 @@ var parser = {
 		var doc = document.implementation.createHTMLDocument('');
 		doc.documentElement.innerHTML = page;
 		$itemlist = $(doc).find('#itemlist');
-		if($itemlist.find('h5:first').length){
+		if($itemlist.find('h1:first').length){
+			console.log('View Mode: List All with image');
+			return {view:'image', $items:$itemlist.find('table[style]'), detailSelector:'h1', stockSelector:'a[style]:eq(2)'};
+			//parser.searchForItems($itemlist.find('table[style]'), 'h1');
+		}
+		else if($itemlist.find('#layout1').length){
+			console.log('View Mode: Thumbnail View 1');
+			return {view: 'thumb1', $items:$itemlist.find('div.container'), detailSelector: 'div.itemTitle > p', stockSelector:'div.itemLink > p.addcart'};
+		
+		}
+		else if($itemlist.find('#layout2').length){
+			console.log('View Mode: Thumbnail View 2');
+	return {view: 'thumb2', $items:$itemlist.find('div.container'), detailSelector: 'div.itemTitle > p', stockSelector:'div.itemLink > p.addcart'};
+		}
+		
+		else if($itemlist.find('h5:first').length){
 			console.log('View Mode: Thumbnail');
 			return {view:'thumbnail', $items:$itemlist.find('td[style]'), detailSelector:'h5', stockSelector:'a.buy'};
 			//parser.searchForItems($itemlist.find('td[style]'), 'h5');
 		}
-		else if($itemlist.find('h1:first').length){
-			console.log('View Mode: with image');
-			return {view:'image', $items:$itemlist.find('table[style]'), detailSelector:'h1', stockSelector:'a[style]:eq(2)'};
-			//parser.searchForItems($itemlist.find('table[style]'), 'h1');
-		}
+
 		else if($itemlist.find('.list_text:first').length){
-			console.log('View Mode: without image');
+			console.log('View Mode: List All without image');
 			return {view:'no_image', $items:$itemlist.find('tr'), detailSelector:'.list_text', stockSelector:'a b'};
 			//parser.searchForItems($itemlist.find('tr'), '.list_text');
 		}
@@ -100,7 +111,7 @@ var parser = {
 							bg.items.lastNewestFound = true;
 							console.log('Last newest set to current newest.');
 							bg.items.lastNewest = bg.items.currentNewest;
-							//return false; //break out of .each loop 
+							return false; //break out of .each loop 
 						}
 					}//end if count <
 					else{

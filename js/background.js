@@ -189,24 +189,6 @@ var background = {
 				window.clearTimeout(abortTimerId);
 				callback(xhr.responseText);
 				background.requesting = false;
-				background.save();
-				console.log('REQUEST ENDED.');
-				if(background.items.lastNewestFound == false){
-					var nextUrl = background.getPageUrl(background.searchPage.index);
-					console.log('Next page url: ' + nextUrl);
-					// fetch next page if lastNewest not found on current page
-					if(nextUrl != ''){
-						background.getPageSource(nextUrl, callback);
-					}
-					else{ // stop fetching next page if page limit reached
-						console.log('Page limit reached. Stopping search');
-						background.searchPage.index = 0;
-						background.items.lastNewest = background.items.currentNewest;
-						console.log('lastNewest set to currentNewest.'); 
-						console.log(background.items.lastNewest);
-					}
-				}
-
 			}
 		}; //end onreadystatechange
 		xhr.onerror = function(error) {
@@ -217,6 +199,33 @@ var background = {
 		xhr.send();
 		
 	},
+		
+	// callback for XMLHTTPRequest; searches the data passed
+	fetchSuccess: function(data){
+		background.searchPageSource(data);
+		if(background.items.lastNewestFound == false){
+			background.searchPage.index++;
+			console.log('Next page needed.');
+		}
+		background.requesting = false;
+		background.save();
+		console.log('REQUEST ENDED.');
+		if(background.items.lastNewestFound == false){
+			var nextUrl = background.getPageUrl(background.searchPage.index);
+			console.log('Next page url: ' + nextUrl);
+			// fetch next page if lastNewest not found on current page
+			if(nextUrl != ''){
+				background.getPageSource(nextUrl, background.fetchSuccess);
+			}
+			else{ // stop fetching next page if page limit reached
+				console.log('Page limit reached. Stopping search');
+				background.searchPage.index = 0;
+				background.items.lastNewest = background.items.currentNewest;
+				console.log('lastNewest set to currentNewest.'); 
+				console.log(background.items.lastNewest);
+			}
+		}
+	},
 	
 	// check web page
 	checkPage: function(url){
@@ -226,14 +235,7 @@ var background = {
 		var url = background.getPageUrl(background.searchPage.index);
 
 		if(url && background.tracking.list.length){
-			background.getPageSource(url, function(data){
-					background.searchPageSource(data);
-					if(background.items.lastNewestFound == false){
-						background.searchPage.index++;
-						console.log('Next page needed.');
-					}
-
-			}); //end getPageSource
+			background.getPageSource(url, background.fetchSuccess); //end getPageSource
 		} // end if url && ...
 		else{
 			console.log('Invalid url or empty tracking list. Page request not sent.');
@@ -364,4 +366,11 @@ var background = {
 // wire up the listener	
 chrome.runtime.onMessage.addListener(background.onMessage); 
 chrome.windows.onRemoved.addListener(background.save);
+
+// temporary fix for new display layout 
+/*
+chrome.runtime.onInstalled.addListener( function(){
+	console.log('Setting display layout to "All with Image"...');
+	background.getPageSource('http://ekizo.mandarake.co.jp/shop/en/searchOption.do?action=setLayout&keyword=&searchStrategy=keyword&layout=0', function(){console.log('Display layout set.');});
+	});*/
 background.start();
